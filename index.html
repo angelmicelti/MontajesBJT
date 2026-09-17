@@ -1,0 +1,3791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Calculadora de Polarización BJT</title>
+<meta name="description" content="Calculadora de polarización de transistores BJT: resolución paso a paso de los 15 montajes clásicos. Funciona sin conexión.">
+
+<!-- ===== PWA: manifiesto, iconos y meta de instalación ===== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="img/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calc BJT">
+<meta name="application-name" content="Calc BJT">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="js/mathjax-tex-svg.js" id="MathJax-script" async></script>
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --bg-card-hover: rgba(51, 65, 85, 0.8);
+    --border: rgba(148, 163, 184, 0.2);
+    --border-strong: rgba(148, 163, 184, 0.4);
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --accent: #06b6d4;
+    --accent-hover: #0891b2;
+    --accent-glow: rgba(6, 182, 212, 0.3);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --input-color: #3b82f6;
+    --output-color: #10b981;
+    --unknown-color: #f59e0b;
+    --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gradient-bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Animated background blobs */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 50%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
+    animation: float 20s ease-in-out infinite;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    right: -10%;
+    width: 50%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
+    animation: float 25s ease-in-out infinite reverse;
+  }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(50px, 30px); }
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .brand-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--gradient-accent);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px var(--accent-glow);
+    flex-shrink: 0;
+  }
+  .brand-icon svg { width: 32px; height: 32px; }
+  .brand-text h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+  }
+  .brand-text p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+  }
+  .header-info {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .badge {
+    padding: 0.4rem 0.85rem;
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Main layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .app { padding: 1rem; }
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1.5rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+  }
+  .sidebar h2 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.85rem;
+    font-weight: 600;
+  }
+  .category {
+    margin-bottom: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.3);
+  }
+  .category-title {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 0.7rem 0.85rem;
+    background: rgba(59, 130, 246, 0.08);
+    margin-bottom: 0;
+    border-left: 3px solid var(--input-color);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    transition: background 0.15s;
+  }
+  .category-title:hover { background: rgba(59, 130, 246, 0.15); }
+  .category-title .cat-arrow {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  .category.open .cat-arrow { transform: rotate(90deg); }
+  .category-title .cat-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  .category-title .cat-count {
+    background: rgba(148, 163, 184, 0.2);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .circuit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    padding: 0 0.5rem;
+  }
+  .category.open .circuit-list {
+    max-height: 1000px;
+    padding: 0.4rem 0.5rem 0.6rem;
+  }
+  .circuit-item {
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .circuit-item:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+  .circuit-item.active {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--accent);
+    border-color: rgba(6, 182, 212, 0.3);
+    font-weight: 500;
+  }
+  .circuit-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .circuit-item.active .circuit-num {
+    background: var(--accent);
+    color: var(--bg-primary);
+  }
+
+  /* Main content */
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .card-subtitle {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    margin-top: 0.25rem;
+  }
+
+  /* Circuit display */
+  .circuit-display {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .circuit-display { grid-template-columns: 1fr; }
+  }
+
+  .circuit-image-wrap {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .circuit-image-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .circuit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .info-block {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    border-left: 3px solid var(--accent);
+  }
+  .info-block h4 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+  .info-block p { color: var(--text-secondary); font-size: 0.9rem; }
+  .components-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .component-chip {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+  }
+
+  /* Variables panel */
+  .variables-panel {
+    margin-top: 1.5rem;
+  }
+  .variables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.85rem;
+  }
+  .variable-input {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .variable-input:hover { border-color: var(--border-strong); }
+  .variable-input.unknown {
+    border-color: var(--unknown-color);
+    background: rgba(245, 158, 11, 0.05);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+  }
+  .variable-input.filled { border-color: rgba(16, 185, 129, 0.3); }
+
+  .var-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+  .var-name {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+  }
+  .var-name sub { font-size: 0.75em; }
+  .var-type-badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .var-type-badge.input { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+  .var-type-badge.output { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+  .var-type-badge.unknown { background: rgba(245, 158, 11, 0.25); color: #fcd34d; }
+
+  .var-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .var-input-row input {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+    width: 100%;
+    min-width: 0;
+  }
+  .var-input-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(15, 23, 42, 0.8);
+  }
+  .var-input-row input:disabled {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--unknown-color);
+    cursor: not-allowed;
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  .var-input-row input::placeholder { color: var(--text-muted); opacity: 0.5; }
+  .var-unit {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    min-width: 30px;
+  }
+  .var-unknown-btn {
+    background: transparent;
+    border: 1px solid var(--unknown-color);
+    color: var(--unknown-color);
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.15s;
+  }
+  .var-unknown-btn:hover {
+    background: var(--unknown-color);
+    color: var(--bg-primary);
+  }
+  .var-unknown-btn.active {
+    background: var(--unknown-color);
+    color: var(--bg-primary);
+  }
+  .var-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  /* Action bar */
+  .action-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    padding: 0.7rem 1.4rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--gradient-accent);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--accent-glow);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+  }
+  .btn-secondary {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: rgba(148, 163, 184, 0.25); }
+
+  .unknown-indicator {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+  .unknown-indicator strong { color: var(--unknown-color); }
+
+  /* Formulas display */
+  .formulas-section {
+    margin-top: 1.25rem;
+  }
+  .formulas-section h3 {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .formulas-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.6rem;
+  }
+  .formula-item {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    overflow-x: auto;
+  }
+  .formula-item:hover { border-color: var(--accent); }
+
+  /* Result panel */
+  .result-panel {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    display: none;
+  }
+  .result-panel.visible { display: block; animation: slideIn 0.3s ease; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .result-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--success);
+  }
+  .result-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .result-value-box {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--success);
+  }
+  .result-variable {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+  }
+  .result-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--success);
+    letter-spacing: -0.02em;
+  }
+  .result-unit {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-left: 0.4rem;
+    font-weight: 400;
+  }
+  .result-steps h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+  .step {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+  }
+  .step-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .error-panel {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    color: #fca5a5;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  .error-panel.visible { display: block; }
+
+  /* Footer */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+
+  /* Print-friendly tweaks */
+  mjx-container { color: inherit !important; }
+
+  /* ===== Modo examen ===== */
+  body.examen-mode .formulas-card { display: none !important; }
+  body.examen-mode .result-steps,
+  body.examen-mode #result-steps { display: none !important; }
+  body.examen-mode .step { display: none !important; }
+  body.examen-mode .result-panel .result-steps h4 { display: none; }
+  body.examen-mode .exam-badge { display: inline-flex !important; }
+  body.examen-mode .var-desc { display: none; }
+  body.examen-mode .info-block { opacity: 0.6; }
+  body.examen-mode .components-grid { opacity: 0.6; }
+
+  .exam-badge {
+    display: none;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .exam-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .exam-toggle:hover { background: rgba(148, 163, 184, 0.2); }
+  .exam-toggle.active {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+  }
+  .exam-toggle-switch {
+    width: 32px;
+    height: 18px;
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .exam-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .exam-toggle.active .exam-toggle-switch {
+    background: var(--danger);
+  }
+  .exam-toggle.active .exam-toggle-switch::after {
+    left: 16px;
+  }
+
+  /* ===== PWA: botón de instalación ===== */
+  .pwa-install {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: var(--gradient-accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.45rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px var(--accent-glow);
+    transition: filter 0.2s, transform 0.2s;
+  }
+  .pwa-install:hover { filter: brightness(1.12); }
+  .pwa-install:active { transform: scale(0.97); }
+  .pwa-install[hidden] { display: none; }
+  @media (max-width: 640px) {
+    .pwa-install { padding: 0.4rem 0.7rem; font-size: 0.78rem; }
+  }
+
+  /* ===== Múltiples resultados ===== */
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .result-card-mini {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid var(--success);
+  }
+  .result-card-mini.failed { border-left-color: var(--danger); }
+  .result-card-mini .result-variable {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-bottom: 0.25rem;
+  }
+  .result-card-mini .result-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--success);
+  }
+  .result-card-mini.failed .result-value { color: #fca5a5; font-size: 0.95rem; }
+  .result-card-mini .result-unit {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-left: 0.3rem;
+    font-weight: 400;
+  }
+
+  /* ===== Aviso de saturación ===== */
+  .saturation-banner {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+  }
+  .saturation-banner.cutoff {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+  .saturation-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(245, 158, 11, 0.25);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--warning);
+    flex-shrink: 0;
+  }
+  .saturation-banner.cutoff .saturation-icon {
+    background: rgba(99, 102, 241, 0.25);
+    color: #a5b4fc;
+  }
+  .saturation-content { flex: 1; min-width: 0; }
+  .saturation-title {
+    font-weight: 700;
+    color: var(--warning);
+    font-size: 0.98rem;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .saturation-banner.cutoff .saturation-title { color: #a5b4fc; }
+  .saturation-title .tag {
+    background: rgba(245, 158, 11, 0.25);
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .saturation-banner.cutoff .saturation-title .tag {
+    background: rgba(99, 102, 241, 0.25);
+  }
+  .saturation-text {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .saturation-text strong { color: var(--text-primary); }
+  .saturation-recalc {
+    margin-top: 0.6rem;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    border-left: 3px solid var(--warning);
+  }
+  .saturation-banner.cutoff .saturation-recalc {
+    border-left-color: #818cf8;
+  }
+  .saturation-recalc-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  .saturation-recalc-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+  }
+  .saturation-recalc-row .var {
+    color: var(--text-muted);
+  }
+  .saturation-recalc-row .val {
+    color: var(--success);
+    font-weight: 600;
+    margin-left: 0.3rem;
+  }
+
+  /* Tarjeta de resultado marcada como saturada */
+  .result-card-mini.saturated {
+    border-left-color: var(--warning);
+    background: rgba(245, 158, 11, 0.05);
+  }
+  .result-card-mini.saturated .result-value { color: var(--warning); }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-strong);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 1100px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    animation: scaleIn 0.2s ease;
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(59,130,246,0.04));
+  }
+  .modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .modal-subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+  }
+  .modal-close {
+    background: rgba(148,163,184,0.1);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .modal-close:hover {
+    background: rgba(239,68,68,0.15);
+    color: #fca5a5;
+    border-color: rgba(239,68,68,0.3);
+  }
+  .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+
+  /* Layout del modal de recta de carga */
+  .loadline-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .loadline-layout { grid-template-columns: 1fr; }
+  }
+  .loadline-chart-wrap {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .loadline-chart-wrap canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    background: #fff;
+    border-radius: 8px;
+  }
+  .loadline-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+  }
+  .loadline-legend .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+  }
+  .loadline-legend .leg-swatch {
+    width: 18px;
+    height: 4px;
+    border-radius: 2px;
+  }
+  .loadline-legend .leg-swatch.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .loadline-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .loadline-info-block {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+  }
+  .loadline-info-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.55rem;
+    font-weight: 600;
+  }
+  .loadline-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.92rem;
+    border-bottom: 1px dashed rgba(148,163,184,0.1);
+  }
+  .loadline-info-row:last-child { border-bottom: none; }
+  .loadline-info-row .ll-var { color: var(--text-secondary); }
+  .loadline-info-row .ll-val { color: var(--text-primary); font-weight: 600; }
+  .loadline-info-row.highlight .ll-val { color: var(--accent); }
+  .loadline-info-row.saturated .ll-val { color: var(--warning); }
+  .loadline-info-row.cutoff .ll-val { color: #a5b4fc; }
+
+  .loadline-explanation {
+    background: rgba(6,182,212,0.05);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 10px;
+    padding: 0.75rem 0.95rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .loadline-explanation strong { color: var(--text-primary); }
+
+  /* Sliders interactivos */
+  .ll-control {
+    margin-bottom: 0.55rem;
+  }
+  .ll-control:last-child { margin-bottom: 0; }
+  .ll-control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    font-size: 0.82rem;
+  }
+  .ll-control-row .ll-ctrl-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .ll-control-row .ll-ctrl-val {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-weight: 600;
+    background: rgba(6,182,212,0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+  }
+  .ll-control input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(148,163,184,0.2);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  .ll-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(6,182,212,0.4);
+    transition: transform 0.1s;
+  }
+  .ll-control input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+  .ll-control input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(6,182,212,0.4);
+  }
+  .ll-control-range-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="2"/>
+          <path d="M4 12 L9 12 M15 12 L20 12 M12 4 L12 9 M12 15 L12 20"/>
+          <path d="M7 7 L9 9 M15 15 L17 17 M7 17 L9 15 M15 9 L17 7" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Calculadora de Polarización BJT</h1>
+        <p>Resolución paso a paso de los 15 montajes clásicos de transistores bipolares</p>
+      </div>
+    </div>
+    <div class="header-info">
+      <span class="badge">15 circuitos</span>
+      <span class="exam-badge" title="Modo examen activo: fórmulas y pasos ocultos">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L4 7v6c0 5 8 9 8 9s8-4 8-9V7l-8-5z"/></svg>
+        Modo examen
+      </span>
+      <button class="exam-toggle" id="exam-toggle" onclick="toggleExamMode()" title="Modo examen: oculta las fórmulas y los pasos, mostrando solo el resultado final">
+        <span class="exam-toggle-switch"></span>
+        <span>Examen</span>
+      </button>
+      <button class="pwa-install" id="pwa-install" hidden aria-label="Instalar la aplicación en este dispositivo" title="Instalar la aplicación">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <span>Instalar app</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Selecciona el montaje</h2>
+      <div id="circuit-list"></div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="content">
+      <div class="card" id="circuit-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="circuit-title">—</div>
+            <div class="card-subtitle" id="circuit-subtitle">Selecciona un circuito en el panel izquierdo</div>
+          </div>
+        </div>
+
+        <div class="circuit-display">
+          <div class="circuit-image-wrap">
+            <img id="circuit-image" src="" alt="Diagrama del circuito" />
+          </div>
+          <div class="circuit-info">
+            <div class="info-block">
+              <h4>Descripción</h4>
+              <p id="circuit-description">—</p>
+            </div>
+            <div class="info-block">
+              <h4>Componentes</h4>
+              <div class="components-grid" id="circuit-components"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="variables-panel">
+          <h3 style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+            Datos del problema
+          </h3>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+            Introduce todos los valores conocidos y marca con el botón <strong style="color:var(--unknown-color);">?</strong> las incógnitas que quieres calcular. Puedes marcar <strong>varias a la vez</strong>.
+            <br><span style="font-size:0.8rem; opacity:0.85;">Resistencias en kΩ: admite <code style="background:rgba(148,163,184,0.15); padding:0.05rem 0.3rem; border-radius:3px;">2.3</code>, <code style="background:rgba(148,163,184,0.15); padding:0.05rem 0.3rem; border-radius:3px;">2,3</code> o <code style="background:rgba(148,163,184,0.15); padding:0.05rem 0.3rem; border-radius:3px;">2K3</code> = 2,3 kΩ. Tensiones en V y corrientes en A.</span>
+          </p>
+          <div class="variables-grid" id="variables-grid"></div>
+
+          <div class="action-bar">
+            <button class="btn btn-primary" id="btn-calcular">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Calcular incógnita(s)
+            </button>
+            <button class="btn btn-secondary" id="btn-limpiar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Limpiar
+            </button>
+            <button class="btn btn-secondary" id="btn-loadline" title="Muestra la recta de carga del transistor y el punto de trabajo actual">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M3 21L21 3" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>
+              Recta de carga
+            </button>
+            <div class="unknown-indicator" id="unknown-indicator">
+              Incógnitas: <strong id="unknown-name">—</strong>
+            </div>
+          </div>
+
+          <div class="error-panel" id="error-panel"></div>
+
+          <div class="result-panel" id="result-panel">
+            <div class="result-header">
+              <div class="result-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="result-title">Resultado</div>
+            </div>
+            <div id="saturation-banner"></div>
+            <div class="results-grid" id="results-grid"></div>
+            <div class="result-value-box" id="result-value-box" style="display:none;">
+              <div class="result-variable" id="result-variable">—</div>
+              <div>
+                <span class="result-value" id="result-value">—</span>
+                <span class="result-unit" id="result-unit"></span>
+              </div>
+            </div>
+            <div class="result-steps" id="result-steps-wrap">
+              <h4>Desarrollo paso a paso</h4>
+              <div id="result-steps"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card formulas-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Fórmulas del montaje</div>
+            <div class="card-subtitle">Ecuaciones utilizadas en este circuito</div>
+          </div>
+        </div>
+        <div class="formulas-list" id="formulas-list"></div>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <p>Calculadora didáctica de polarización BJT · 15 montajes · Resolución simbólica de cualquier incógnita</p>
+  </footer>
+</div>
+
+<!-- ===== Modal: Recta de carga ===== -->
+<div class="modal-overlay" id="modal-loadline" onclick="if(event.target===this)closeLoadLineModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Recta de carga del transistor</div>
+        <div class="modal-subtitle" id="loadline-subtitle">—</div>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <button class="btn btn-secondary" id="btn-export-png" title="Exportar el gráfico como imagen PNG" onclick="exportLoadLinePNG()" style="padding:0.5rem 0.85rem; font-size:0.85rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          PNG
+        </button>
+        <button class="modal-close" onclick="closeLoadLineModal()" title="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="loadline-layout">
+        <div class="loadline-chart-wrap">
+          <canvas id="loadline-canvas" width="640" height="480"></canvas>
+          <div class="loadline-legend" id="loadline-legend"></div>
+        </div>
+        <div class="loadline-side">
+          <!-- Controles interactivos -->
+          <div class="loadline-info-block" id="loadline-controls">
+            <div class="loadline-info-title">
+              Ajuste interactivo
+              <span style="font-size:0.65rem; color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0; margin-left:0.4rem;">(mover Q en tiempo real)</span>
+            </div>
+            <div id="ll-controls-list"></div>
+            <div style="display:flex; gap:0.4rem; margin-top:0.6rem;">
+              <button class="btn btn-secondary" id="btn-ll-reset" onclick="resetLLControls()" style="flex:1; padding:0.4rem; font-size:0.8rem;">Restablecer</button>
+              <button class="btn btn-secondary" id="btn-ll-apply" onclick="applyLLToInputs()" style="flex:1; padding:0.4rem; font-size:0.8rem;">Aplicar a inputs</button>
+            </div>
+          </div>
+          <div class="loadline-info-block">
+            <div class="loadline-info-title">Punto de trabajo (Q)</div>
+            <div class="loadline-info-row" id="qpoint-ic"><span class="ll-var">I<sub>C</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="qpoint-vce"><span class="ll-var">V<sub>CE</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="qpoint-ib"><span class="ll-var">I<sub>B</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="qpoint-state"><span class="ll-var">Zona</span><span class="ll-val">—</span></div>
+          </div>
+          <div class="loadline-info-block">
+            <div class="loadline-info-title">Recta de carga</div>
+            <div class="loadline-info-row" id="ll-ic-sat"><span class="ll-var">I<sub>C(sat)</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="ll-vce-cutoff"><span class="ll-var">V<sub>CE(corte)</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="ll-slope"><span class="ll-var">Pendiente</span><span class="ll-val">—</span></div>
+          </div>
+          <div class="loadline-info-block" id="loadline-extra">
+            <div class="loadline-info-title">Datos del circuito</div>
+            <div class="loadline-info-row" id="ll-vcc"><span class="ll-var">V<sub>CC</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="ll-rc"><span class="ll-var">R<sub>C</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="ll-re"><span class="ll-var">R<sub>E</sub></span><span class="ll-val">—</span></div>
+            <div class="loadline-info-row" id="ll-vcesat"><span class="ll-var">V<sub>CE(sat)</sub></span><span class="ll-val">—</span></div>
+          </div>
+          <div class="loadline-explanation" id="loadline-explanation"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DEFINICIÓN DE LOS 15 CIRCUITOS BJT
+   ============================================================
+   Cada circuito define:
+   - id, nombre, imagen, descripción, componentes
+   - variables: diccionario con todas las magnitudes
+   - formulas: lista de {resultado, deps, fn, tex, descripcion}
+     · "deps" son las variables necesarias
+     · "fn" es la función de cálculo (recibe un objeto con valores)
+     · "tex" es la fórmula en LaTeX para mostrar
+     · Se incluyen tanto fórmulas directas como inversas, de manera
+       que el solver pueda resolver CUALQUIER variable como incógnita.
+   ============================================================ */
+
+const VBE_DEFAULT = 0.7; // V (silicio)
+const VCE_SAT_DEFAULT = 0.2; // V (típica en saturación para un BJT de silicio)
+
+const circuitos = [
+  /* ============================================================
+     CON UNA FUENTE DE TENSIÓN
+     ============================================================ */
+  {
+    id: 1,
+    nombre: "Polarización fija",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/01_polarizacion_fija.png",
+    descripcion: "Configuración más simple: una sola resistencia de base RB fija la corriente de base, y RC limita la corriente de colector. El emisor está conectado directamente a tierra.",
+    componentes: ["VCC", "RB", "RC", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor (= 0)"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída de tensión en RC"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VCC","VBE","RB"],   fn:v=>(v.VCC-v.VBE)/v.RB,            tex:"I_B = \\dfrac{V_{CC}-V_{BE}}{R_B}"},
+      {resultado:"IC",  deps:["beta","IB"],         fn:v=>v.beta*v.IB,                   tex:"I_C = \\beta\\, I_B"},
+      {resultado:"IE",  deps:["IC","IB"],           fn:v=>v.IC+v.IB,                     tex:"I_E = I_C + I_B"},
+      {resultado:"IE",  deps:["beta","IB"],         fn:v=>(v.beta+1)*v.IB,               tex:"I_E = (\\beta+1)\\, I_B"},
+      {resultado:"VCE", deps:["VCC","IC","RC"],     fn:v=>v.VCC-v.IC*v.RC,               tex:"V_{CE} = V_{CC} - I_C\\, R_C"},
+      {resultado:"VB",  deps:["VBE"],               fn:v=>v.VBE,                         tex:"V_B = V_{BE}"},
+      {resultado:"VC",  deps:["VCE"],               fn:v=>v.VCE,                         tex:"V_C = V_{CE}"},
+      {resultado:"VE",  deps:[],                    fn:v=>0,                             tex:"V_E = 0"},
+      {resultado:"VRC", deps:["IC","RC"],           fn:v=>v.IC*v.RC,                     tex:"V_{RC} = I_C\\, R_C"},
+      {resultado:"VRC", deps:["VCC","VCE"],         fn:v=>v.VCC-v.VCE,                   tex:"V_{RC} = V_{CC} - V_{CE}"},
+      // inversas
+      {resultado:"VCC", deps:["IB","RB","VBE"],     fn:v=>v.IB*v.RB+v.VBE,               tex:"V_{CC} = I_B R_B + V_{BE}"},
+      {resultado:"VCC", deps:["VCE","IC","RC"],     fn:v=>v.VCE+v.IC*v.RC,               tex:"V_{CC} = V_{CE} + I_C R_C"},
+      {resultado:"RB",  deps:["VCC","VBE","IB"],    fn:v=>(v.VCC-v.VBE)/v.IB,            tex:"R_B = \\dfrac{V_{CC}-V_{BE}}{I_B}"},
+      {resultado:"RC",  deps:["VCC","VCE","IC"],    fn:v=>(v.VCC-v.VCE)/v.IC,            tex:"R_C = \\dfrac{V_{CC}-V_{CE}}{I_C}"},
+      {resultado:"RC",  deps:["VRC","IC"],          fn:v=>v.VRC/v.IC,                    tex:"R_C = \\dfrac{V_{RC}}{I_C}"},
+      {resultado:"beta",deps:["IC","IB"],           fn:v=>v.IC/v.IB,                     tex:"\\beta = \\dfrac{I_C}{I_B}"},
+      {resultado:"VBE", deps:["VCC","IB","RB"],     fn:v=>v.VCC-v.IB*v.RB,               tex:"V_{BE} = V_{CC} - I_B R_B"},
+    ],
+  },
+
+  {
+    id: 2,
+    nombre: "Realimentación de emisor",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/02_realimentacion_emisor.png",
+    descripcion: "Añade una resistencia de emisor RE que proporciona realimentación negativa: cualquier aumento de IC aumenta VE, lo que reduce VBE y estabiliza el punto de operación.",
+    componentes: ["VCC", "RB", "RC", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VCC","VBE","RB","beta","RE"], fn:v=>(v.VCC-v.VBE)/(v.RB+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{CC}-V_{BE}}{R_B + (\\beta+1) R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],       fn:v=>v.beta*v.IB,            tex:"I_C = \\beta\\, I_B"},
+      {resultado:"IE",  deps:["beta","IB"],       fn:v=>(v.beta+1)*v.IB,        tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"IE",  deps:["IC","IB"],         fn:v=>v.IC+v.IB,              tex:"I_E = I_C + I_B"},
+      {resultado:"VE",  deps:["IE","RE"],         fn:v=>v.IE*v.RE,              tex:"V_E = I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],        fn:v=>v.VE+v.VBE,             tex:"V_B = V_E + V_{BE}"},
+      {resultado:"VC",  deps:["VCC","IC","RC"],   fn:v=>v.VCC-v.IC*v.RC,        tex:"V_C = V_{CC} - I_C R_C"},
+      {resultado:"VCE", deps:["VCC","IC","RC","IE","RE"], fn:v=>v.VCC-v.IC*v.RC-v.IE*v.RE, tex:"V_{CE} = V_{CC} - I_C R_C - I_E R_E"},
+      {resultado:"VCE", deps:["VC","VE"],         fn:v=>v.VC-v.VE,              tex:"V_{CE} = V_C - V_E"},
+      {resultado:"VRC", deps:["IC","RC"],         fn:v=>v.IC*v.RC,              tex:"V_{RC} = I_C R_C"},
+      {resultado:"VRE", deps:["IE","RE"],         fn:v=>v.IE*v.RE,              tex:"V_{RE} = I_E R_E"},
+      // inversas
+      {resultado:"RB",  deps:["VCC","VBE","IB","beta","RE"], fn:v=>(v.VCC-v.VBE)/v.IB-(v.beta+1)*v.RE, tex:"R_B = \\dfrac{V_{CC}-V_{BE}}{I_B} - (\\beta+1)R_E"},
+      {resultado:"RE",  deps:["VCC","VBE","IB","RB","beta"], fn:v=>((v.VCC-v.VBE)/v.IB-v.RB)/(v.beta+1), tex:"R_E = \\dfrac{\\dfrac{V_{CC}-V_{BE}}{I_B}-R_B}{\\beta+1}"},
+      {resultado:"RE",  deps:["VE","IE"],         fn:v=>v.VE/v.IE,              tex:"R_E = V_E/I_E"},
+      {resultado:"RC",  deps:["VCC","VC","IC"],   fn:v=>(v.VCC-v.VC)/v.IC,      tex:"R_C = (V_{CC}-V_C)/I_C"},
+      {resultado:"RC",  deps:["VRC","IC"],        fn:v=>v.VRC/v.IC,             tex:"R_C = V_{RC}/I_C"},
+      {resultado:"VCC", deps:["VCE","IC","RC","IE","RE"], fn:v=>v.VCE+v.IC*v.RC+v.IE*v.RE, tex:"V_{CC} = V_{CE}+I_C R_C+I_E R_E"},
+      {resultado:"beta",deps:["IC","IB"],         fn:v=>v.IC/v.IB,              tex:"\\beta = I_C/I_B"},
+      {resultado:"VBE", deps:["VB","VE"],         fn:v=>v.VB-v.VE,              tex:"V_{BE} = V_B - V_E"},
+    ],
+  },
+
+  {
+    id: 3,
+    nombre: "Realimentación de colector",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/03_realimentacion_colector.png",
+    descripcion: "La resistencia de base RB se conecta al colector en lugar de a VCC, de modo que cualquier aumento de IC reduce VC y, por tanto, IB. Estabiliza el punto de operación frente a variaciones de β.",
+    componentes: ["VCC", "RB", "RC", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base (base-colector)"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor (= 0)"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VCC","VBE","RB","beta","RC"], fn:v=>(v.VCC-v.VBE)/(v.RB+(v.beta+1)*v.RC), tex:"I_B = \\dfrac{V_{CC}-V_{BE}}{R_B + (\\beta+1) R_C}"},
+      {resultado:"IC",  deps:["beta","IB"],       fn:v=>v.beta*v.IB,            tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],       fn:v=>(v.beta+1)*v.IB,        tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VRC", deps:["IE","RC"],         fn:v=>v.IE*v.RC,              tex:"V_{RC} = I_E R_C \\;\\;\\text{(por RC circula } I_E)"},
+      {resultado:"VCE", deps:["VCC","IE","RC"],   fn:v=>v.VCC-v.IE*v.RC,        tex:"V_{CE} = V_{CC} - I_E R_C"},
+      {resultado:"VC",  deps:["VCE"],             fn:v=>v.VCE,                  tex:"V_C = V_{CE}"},
+      {resultado:"VB",  deps:["VBE"],             fn:v=>v.VBE,                  tex:"V_B = V_{BE}"},
+      {resultado:"VE",  deps:[],                  fn:v=>0,                      tex:"V_E = 0"},
+      // inversas
+      {resultado:"RB",  deps:["VCC","VBE","IB","beta","RC"], fn:v=>(v.VCC-v.VBE)/v.IB-(v.beta+1)*v.RC, tex:"R_B = \\dfrac{V_{CC}-V_{BE}}{I_B}-(\\beta+1)R_C"},
+      {resultado:"RC",  deps:["VCC","VCE","IE"],  fn:v=>(v.VCC-v.VCE)/v.IE,     tex:"R_C = (V_{CC}-V_{CE})/I_E"},
+      {resultado:"RC",  deps:["VRC","IE"],        fn:v=>v.VRC/v.IE,             tex:"R_C = V_{RC}/I_E"},
+      {resultado:"VCC", deps:["VCE","IE","RC"],   fn:v=>v.VCE+v.IE*v.RC,        tex:"V_{CC} = V_{CE}+I_E R_C"},
+      {resultado:"beta",deps:["IC","IB"],         fn:v=>v.IC/v.IB,              tex:"\\beta = I_C/I_B"},
+      {resultado:"VBE", deps:["VCC","IB","RB","IC","RC"], fn:v=>v.VCC-v.IB*v.RB-v.IC*v.RC, tex:"V_{BE}=V_{CC}-I_B R_B-I_C R_C"},
+    ],
+  },
+
+  {
+    id: 4,
+    nombre: "Realimentación de colector y emisor",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/04_realimentacion_colector_emisor.png",
+    descripcion: "Combina las dos realimentaciones anteriores: RB conecta al colector y hay resistencia de emisor RE. Proporciona la mayor estabilidad entre los circuitos de una sola fuente sin divisor.",
+    componentes: ["VCC", "RB", "RC", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base (base-colector)"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VCC","VBE","RB","beta","RC","RE"], fn:v=>(v.VCC-v.VBE)/(v.RB+(v.beta+1)*(v.RC+v.RE)), tex:"I_B = \\dfrac{V_{CC}-V_{BE}}{R_B + (\\beta+1)(R_C+R_E)}"},
+      {resultado:"IC",  deps:["beta","IB"],       fn:v=>v.beta*v.IB,            tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],       fn:v=>(v.beta+1)*v.IB,        tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VRC", deps:["IE","RC"],         fn:v=>v.IE*v.RC,              tex:"V_{RC} = I_E R_C"},
+      {resultado:"VRE", deps:["IE","RE"],         fn:v=>v.IE*v.RE,              tex:"V_{RE} = I_E R_E"},
+      {resultado:"VCE", deps:["VCC","IE","RC","RE"], fn:v=>v.VCC-v.IE*(v.RC+v.RE), tex:"V_{CE} = V_{CC} - I_E(R_C+R_E)"},
+      {resultado:"VC",  deps:["VCC","IE","RC"],   fn:v=>v.VCC-v.IE*v.RC,        tex:"V_C = V_{CC} - I_E R_C"},
+      {resultado:"VE",  deps:["IE","RE"],         fn:v=>v.IE*v.RE,              tex:"V_E = I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],        fn:v=>v.VE+v.VBE,             tex:"V_B = V_E + V_{BE}"},
+      // inversas
+      {resultado:"RB",  deps:["VCC","VBE","IB","beta","RC","RE"], fn:v=>(v.VCC-v.VBE)/v.IB-(v.beta+1)*(v.RC+v.RE), tex:"R_B = \\dfrac{V_{CC}-V_{BE}}{I_B}-(\\beta+1)(R_C+R_E)"},
+      {resultado:"RC",  deps:["VRC","IE"],        fn:v=>v.VRC/v.IE,             tex:"R_C = V_{RC}/I_E"},
+      {resultado:"RE",  deps:["VRE","IE"],        fn:v=>v.VRE/v.IE,             tex:"R_E = V_{RE}/I_E"},
+      {resultado:"VCC", deps:["VCE","IE","RC","RE"], fn:v=>v.VCE+v.IE*(v.RC+v.RE), tex:"V_{CC} = V_{CE}+I_E(R_C+R_E)"},
+      {resultado:"beta",deps:["IC","IB"],         fn:v=>v.IC/v.IB,              tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 5,
+    nombre: "Divisor con RC",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/05_divisor_rc.png",
+    descripcion: "Polarización por divisor de tensión con R1 y R2 que fijan la tensión de base. Solo hay resistencia de colector RC; el emisor va a tierra. Muy sensible a β (poco estable).",
+    componentes: ["VCC", "R1", "R2", "RC", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      R1:   {tipo:"input",  unidad:"Ω", desc:"Resistencia superior del divisor"},
+      R2:   {tipo:"input",  unidad:"Ω", desc:"Resistencia inferior del divisor"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      VTH:  {tipo:"output", unidad:"V", desc:"Tensión Thevenin del divisor"},
+      RTH:  {tipo:"output", unidad:"Ω", desc:"Resistencia Thevenin del divisor"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor (= 0)"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+    },
+    formulas: [
+      {resultado:"VTH", deps:["VCC","R1","R2"],   fn:v=>v.VCC*v.R2/(v.R1+v.R2),   tex:"V_{TH} = V_{CC}\\dfrac{R_2}{R_1+R_2}"},
+      {resultado:"RTH", deps:["R1","R2"],         fn:v=>v.R1*v.R2/(v.R1+v.R2),    tex:"R_{TH} = \\dfrac{R_1 R_2}{R_1+R_2}"},
+      {resultado:"IB",  deps:["VTH","VBE","RTH"], fn:v=>(v.VTH-v.VBE)/v.RTH,      tex:"I_B = \\dfrac{V_{TH}-V_{BE}}{R_{TH}}"},
+      {resultado:"IC",  deps:["beta","IB"],       fn:v=>v.beta*v.IB,              tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["IC","IB"],         fn:v=>v.IC+v.IB,                tex:"I_E = I_C + I_B"},
+      {resultado:"VCE", deps:["VCC","IC","RC"],   fn:v=>v.VCC-v.IC*v.RC,          tex:"V_{CE} = V_{CC} - I_C R_C"},
+      {resultado:"VB",  deps:["VBE"],             fn:v=>v.VBE,                    tex:"V_B = V_{BE}"},
+      {resultado:"VC",  deps:["VCE"],             fn:v=>v.VCE,                    tex:"V_C = V_{CE}"},
+      {resultado:"VE",  deps:[],                  fn:v=>0,                        tex:"V_E = 0"},
+      {resultado:"VRC", deps:["IC","RC"],         fn:v=>v.IC*v.RC,                tex:"V_{RC} = I_C R_C"},
+      // inversas
+      {resultado:"R1",  deps:["VTH","VCC","R2"],  fn:v=>v.R2*(v.VCC/v.VTH-1),     tex:"R_1 = R_2\\left(\\dfrac{V_{CC}}{V_{TH}}-1\\right)"},
+      {resultado:"R2",  deps:["VTH","VCC","R1"],  fn:v=>v.R1*v.VTH/(v.VCC-v.VTH), tex:"R_2 = \\dfrac{R_1 V_{TH}}{V_{CC}-V_{TH}}"},
+      {resultado:"RC",  deps:["VCC","VCE","IC"],  fn:v=>(v.VCC-v.VCE)/v.IC,       tex:"R_C = (V_{CC}-V_{CE})/I_C"},
+      {resultado:"beta",deps:["IC","IB"],         fn:v=>v.IC/v.IB,                tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 6,
+    nombre: "Divisor con RC y RB",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/06_divisor_rc_rb.png",
+    descripcion: "Divisor de tensión con una resistencia adicional RB en serie entre el divisor y la base. Se utiliza para limitar IB o ajustar el punto de operación con mayor flexibilidad.",
+    componentes: ["VCC", "R1", "R2", "RB", "RC", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      R1:   {tipo:"input",  unidad:"Ω", desc:"Resistencia superior del divisor"},
+      R2:   {tipo:"input",  unidad:"Ω", desc:"Resistencia inferior del divisor"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia serie con la base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      VTH:  {tipo:"output", unidad:"V", desc:"Tensión Thevenin del divisor"},
+      RTH:  {tipo:"output", unidad:"Ω", desc:"Resistencia Thevenin del divisor"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor (= 0)"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+    },
+    formulas: [
+      {resultado:"VTH", deps:["VCC","R1","R2"],         fn:v=>v.VCC*v.R2/(v.R1+v.R2),   tex:"V_{TH} = V_{CC}\\dfrac{R_2}{R_1+R_2}"},
+      {resultado:"RTH", deps:["R1","R2"],               fn:v=>v.R1*v.R2/(v.R1+v.R2),    tex:"R_{TH} = \\dfrac{R_1 R_2}{R_1+R_2}"},
+      {resultado:"IB",  deps:["VTH","VBE","RTH","RB"],  fn:v=>(v.VTH-v.VBE)/(v.RTH+v.RB), tex:"I_B = \\dfrac{V_{TH}-V_{BE}}{R_{TH}+R_B}"},
+      {resultado:"IC",  deps:["beta","IB"],             fn:v=>v.beta*v.IB,              tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["IC","IB"],               fn:v=>v.IC+v.IB,                tex:"I_E = I_C+I_B"},
+      {resultado:"VCE", deps:["VCC","IC","RC"],         fn:v=>v.VCC-v.IC*v.RC,          tex:"V_{CE} = V_{CC}-I_C R_C"},
+      {resultado:"VB",  deps:["VBE"],                   fn:v=>v.VBE,                    tex:"V_B = V_{BE}"},
+      {resultado:"VC",  deps:["VCE"],                   fn:v=>v.VCE,                    tex:"V_C = V_{CE}"},
+      {resultado:"VE",  deps:[],                        fn:v=>0,                        tex:"V_E = 0"},
+      {resultado:"VRC", deps:["IC","RC"],               fn:v=>v.IC*v.RC,                tex:"V_{RC} = I_C R_C"},
+      // inversas
+      {resultado:"RB",  deps:["VTH","VBE","IB","RTH"],  fn:v=>(v.VTH-v.VBE)/v.IB-v.RTH, tex:"R_B = \\dfrac{V_{TH}-V_{BE}}{I_B}-R_{TH}"},
+      {resultado:"R1",  deps:["VTH","VCC","R2"],        fn:v=>v.R2*(v.VCC/v.VTH-1),     tex:"R_1 = R_2(\\frac{V_{CC}}{V_{TH}}-1)"},
+      {resultado:"R2",  deps:["VTH","VCC","R1"],        fn:v=>v.R1*v.VTH/(v.VCC-v.VTH), tex:"R_2 = \\dfrac{R_1 V_{TH}}{V_{CC}-V_{TH}}"},
+      {resultado:"RC",  deps:["VCC","VCE","IC"],        fn:v=>(v.VCC-v.VCE)/v.IC,       tex:"R_C = (V_{CC}-V_{CE})/I_C"},
+      {resultado:"beta",deps:["IC","IB"],               fn:v=>v.IC/v.IB,                tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 7,
+    nombre: "Divisor con RE",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/07_divisor_re.png",
+    descripcion: "Divisor de tensión con resistencia de emisor RE y sin resistencia de colector (el colector se conecta directamente a VCC). Estabiliza la corriente de emisor gracias a RE.",
+    componentes: ["VCC", "R1", "R2", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      R1:   {tipo:"input",  unidad:"Ω", desc:"Resistencia superior del divisor"},
+      R2:   {tipo:"input",  unidad:"Ω", desc:"Resistencia inferior del divisor"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      VTH:  {tipo:"output", unidad:"V", desc:"Tensión Thevenin del divisor"},
+      RTH:  {tipo:"output", unidad:"Ω", desc:"Resistencia Thevenin del divisor"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector (= VCC)"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"VTH", deps:["VCC","R1","R2"],             fn:v=>v.VCC*v.R2/(v.R1+v.R2),   tex:"V_{TH} = V_{CC}\\dfrac{R_2}{R_1+R_2}"},
+      {resultado:"RTH", deps:["R1","R2"],                   fn:v=>v.R1*v.R2/(v.R1+v.R2),    tex:"R_{TH} = \\dfrac{R_1 R_2}{R_1+R_2}"},
+      {resultado:"IB",  deps:["VTH","VBE","RTH","beta","RE"], fn:v=>(v.VTH-v.VBE)/(v.RTH+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{TH}-V_{BE}}{R_{TH}+(\\beta+1)R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],                 fn:v=>v.beta*v.IB,              tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],                 fn:v=>(v.beta+1)*v.IB,          tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VE",  deps:["IE","RE"],                   fn:v=>v.IE*v.RE,                tex:"V_E = I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],                  fn:v=>v.VE+v.VBE,               tex:"V_B = V_E+V_{BE}"},
+      {resultado:"VC",  deps:["VCC"],                       fn:v=>v.VCC,                    tex:"V_C = V_{CC}"},
+      {resultado:"VCE", deps:["VCC","IE","RE"],             fn:v=>v.VCC-v.IE*v.RE,          tex:"V_{CE} = V_{CC}-I_E R_E"},
+      {resultado:"VRE", deps:["IE","RE"],                   fn:v=>v.IE*v.RE,                tex:"V_{RE} = I_E R_E"},
+      // inversas
+      {resultado:"RE",  deps:["VE","IE"],                   fn:v=>v.VE/v.IE,                tex:"R_E = V_E/I_E"},
+      {resultado:"RE",  deps:["VTH","VBE","IB","RTH","beta"], fn:v=>((v.VTH-v.VBE)/v.IB-v.RTH)/(v.beta+1), tex:"R_E = \\dfrac{\\frac{V_{TH}-V_{BE}}{I_B}-R_{TH}}{\\beta+1}"},
+      {resultado:"R1",  deps:["VTH","VCC","R2"],            fn:v=>v.R2*(v.VCC/v.VTH-1),     tex:"R_1 = R_2(\\frac{V_{CC}}{V_{TH}}-1)"},
+      {resultado:"R2",  deps:["VTH","VCC","R1"],            fn:v=>v.R1*v.VTH/(v.VCC-v.VTH), tex:"R_2 = \\frac{R_1 V_{TH}}{V_{CC}-V_{TH}}"},
+      {resultado:"beta",deps:["IC","IB"],                   fn:v=>v.IC/v.IB,                tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 8,
+    nombre: "Divisor con RE y RB",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/08_divisor_re_rb.png",
+    descripcion: "Divisor de tensión con resistencia adicional RB en serie con la base y resistencia de emisor RE. Combina el efecto del divisor con una RB que permite ajustar la corriente de base.",
+    componentes: ["VCC", "R1", "R2", "RB", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      R1:   {tipo:"input",  unidad:"Ω", desc:"Resistencia superior del divisor"},
+      R2:   {tipo:"input",  unidad:"Ω", desc:"Resistencia inferior del divisor"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia serie con la base"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      VTH:  {tipo:"output", unidad:"V", desc:"Tensión Thevenin del divisor"},
+      RTH:  {tipo:"output", unidad:"Ω", desc:"Resistencia Thevenin del divisor"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector (= VCC)"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"VTH", deps:["VCC","R1","R2"],                  fn:v=>v.VCC*v.R2/(v.R1+v.R2),   tex:"V_{TH} = V_{CC}\\dfrac{R_2}{R_1+R_2}"},
+      {resultado:"RTH", deps:["R1","R2"],                        fn:v=>v.R1*v.R2/(v.R1+v.R2),    tex:"R_{TH} = \\dfrac{R_1 R_2}{R_1+R_2}"},
+      {resultado:"IB",  deps:["VTH","VBE","RTH","RB","beta","RE"], fn:v=>(v.VTH-v.VBE)/(v.RTH+v.RB+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{TH}-V_{BE}}{R_{TH}+R_B+(\\beta+1)R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],                      fn:v=>v.beta*v.IB,              tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],                      fn:v=>(v.beta+1)*v.IB,          tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VE",  deps:["IE","RE"],                        fn:v=>v.IE*v.RE,                tex:"V_E = I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],                       fn:v=>v.VE+v.VBE,               tex:"V_B = V_E+V_{BE}"},
+      {resultado:"VC",  deps:["VCC"],                            fn:v=>v.VCC,                    tex:"V_C = V_{CC}"},
+      {resultado:"VCE", deps:["VCC","IE","RE"],                  fn:v=>v.VCC-v.IE*v.RE,          tex:"V_{CE} = V_{CC}-I_E R_E"},
+      {resultado:"VRE", deps:["IE","RE"],                        fn:v=>v.IE*v.RE,                tex:"V_{RE} = I_E R_E"},
+      // inversas
+      {resultado:"RB",  deps:["VTH","VBE","IB","RTH","beta","RE"], fn:v=>(v.VTH-v.VBE)/v.IB-v.RTH-(v.beta+1)*v.RE, tex:"R_B = \\frac{V_{TH}-V_{BE}}{I_B}-R_{TH}-(\\beta+1)R_E"},
+      {resultado:"RE",  deps:["VE","IE"],                        fn:v=>v.VE/v.IE,                tex:"R_E = V_E/I_E"},
+      {resultado:"R1",  deps:["VTH","VCC","R2"],                 fn:v=>v.R2*(v.VCC/v.VTH-1),     tex:"R_1 = R_2(\\frac{V_{CC}}{V_{TH}}-1)"},
+      {resultado:"R2",  deps:["VTH","VCC","R1"],                 fn:v=>v.R1*v.VTH/(v.VCC-v.VTH), tex:"R_2 = \\frac{R_1 V_{TH}}{V_{CC}-V_{TH}}"},
+      {resultado:"beta",deps:["IC","IB"],                        fn:v=>v.IC/v.IB,                tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 9,
+    nombre: "Divisor con RC y RE",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/09_divisor_rc_re.png",
+    descripcion: "Configuración clásica de polarización por divisor con resistencias de colector y emisor. Es el montaje más estable y utilizado en la práctica porque combina el divisor rígido con realimentación por RE.",
+    componentes: ["VCC", "R1", "R2", "RC", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      R1:   {tipo:"input",  unidad:"Ω", desc:"Resistencia superior del divisor"},
+      R2:   {tipo:"input",  unidad:"Ω", desc:"Resistencia inferior del divisor"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      VTH:  {tipo:"output", unidad:"V", desc:"Tensión Thevenin del divisor"},
+      RTH:  {tipo:"output", unidad:"Ω", desc:"Resistencia Thevenin del divisor"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"VTH", deps:["VCC","R1","R2"],              fn:v=>v.VCC*v.R2/(v.R1+v.R2),   tex:"V_{TH} = V_{CC}\\dfrac{R_2}{R_1+R_2}"},
+      {resultado:"RTH", deps:["R1","R2"],                    fn:v=>v.R1*v.R2/(v.R1+v.R2),    tex:"R_{TH} = \\dfrac{R_1 R_2}{R_1+R_2}"},
+      {resultado:"IB",  deps:["VTH","VBE","RTH","beta","RE"], fn:v=>(v.VTH-v.VBE)/(v.RTH+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{TH}-V_{BE}}{R_{TH}+(\\beta+1)R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],                  fn:v=>v.beta*v.IB,              tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],                  fn:v=>(v.beta+1)*v.IB,          tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VE",  deps:["IE","RE"],                    fn:v=>v.IE*v.RE,                tex:"V_E = I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],                   fn:v=>v.VE+v.VBE,               tex:"V_B = V_E+V_{BE}"},
+      {resultado:"VC",  deps:["VCC","IC","RC"],              fn:v=>v.VCC-v.IC*v.RC,          tex:"V_C = V_{CC}-I_C R_C"},
+      {resultado:"VRC", deps:["IC","RC"],                    fn:v=>v.IC*v.RC,                tex:"V_{RC} = I_C R_C"},
+      {resultado:"VRE", deps:["IE","RE"],                    fn:v=>v.IE*v.RE,                tex:"V_{RE} = I_E R_E"},
+      {resultado:"VCE", deps:["VC","VE"],                    fn:v=>v.VC-v.VE,                tex:"V_{CE} = V_C - V_E"},
+      {resultado:"VCE", deps:["VCC","IC","RC","IE","RE"],    fn:v=>v.VCC-v.IC*v.RC-v.IE*v.RE, tex:"V_{CE} = V_{CC}-I_C R_C-I_E R_E"},
+      // inversas
+      {resultado:"RC",  deps:["VCC","VC","IC"],              fn:v=>(v.VCC-v.VC)/v.IC,        tex:"R_C = (V_{CC}-V_C)/I_C"},
+      {resultado:"RC",  deps:["VRC","IC"],                   fn:v=>v.VRC/v.IC,               tex:"R_C = V_{RC}/I_C"},
+      {resultado:"RE",  deps:["VE","IE"],                    fn:v=>v.VE/v.IE,                tex:"R_E = V_E/I_E"},
+      {resultado:"R1",  deps:["VTH","VCC","R2"],             fn:v=>v.R2*(v.VCC/v.VTH-1),     tex:"R_1 = R_2(\\frac{V_{CC}}{V_{TH}}-1)"},
+      {resultado:"R2",  deps:["VTH","VCC","R1"],             fn:v=>v.R1*v.VTH/(v.VCC-v.VTH), tex:"R_2 = \\frac{R_1 V_{TH}}{V_{CC}-V_{TH}}"},
+      {resultado:"beta",deps:["IC","IB"],                    fn:v=>v.IC/v.IB,                tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 10,
+    nombre: "Divisor con RC, RE y RB",
+    categoria: "Con una fuente de tensión",
+    imagen: "img/10_divisor_rc_re_rb.png",
+    descripcion: "El divisor más completo: combina R1, R2 (divisor), RB (serie con la base), RC (colector) y RE (emisor). Permite ajustar con precisión el punto de operación y ofrece la máxima estabilidad.",
+    componentes: ["VCC", "R1", "R2", "RB", "RC", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      R1:   {tipo:"input",  unidad:"Ω", desc:"Resistencia superior del divisor"},
+      R2:   {tipo:"input",  unidad:"Ω", desc:"Resistencia inferior del divisor"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia serie con la base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      VTH:  {tipo:"output", unidad:"V", desc:"Tensión Thevenin del divisor"},
+      RTH:  {tipo:"output", unidad:"Ω", desc:"Resistencia Thevenin del divisor"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"VTH", deps:["VCC","R1","R2"],                     fn:v=>v.VCC*v.R2/(v.R1+v.R2),   tex:"V_{TH} = V_{CC}\\dfrac{R_2}{R_1+R_2}"},
+      {resultado:"RTH", deps:["R1","R2"],                           fn:v=>v.R1*v.R2/(v.R1+v.R2),    tex:"R_{TH} = \\dfrac{R_1 R_2}{R_1+R_2}"},
+      {resultado:"IB",  deps:["VTH","VBE","RTH","RB","beta","RE"],  fn:v=>(v.VTH-v.VBE)/(v.RTH+v.RB+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{TH}-V_{BE}}{R_{TH}+R_B+(\\beta+1)R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],                         fn:v=>v.beta*v.IB,              tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],                         fn:v=>(v.beta+1)*v.IB,          tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VE",  deps:["IE","RE"],                           fn:v=>v.IE*v.RE,                tex:"V_E = I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],                          fn:v=>v.VE+v.VBE,               tex:"V_B = V_E+V_{BE}"},
+      {resultado:"VC",  deps:["VCC","IC","RC"],                     fn:v=>v.VCC-v.IC*v.RC,          tex:"V_C = V_{CC}-I_C R_C"},
+      {resultado:"VRC", deps:["IC","RC"],                           fn:v=>v.IC*v.RC,                tex:"V_{RC} = I_C R_C"},
+      {resultado:"VRE", deps:["IE","RE"],                           fn:v=>v.IE*v.RE,                tex:"V_{RE} = I_E R_E"},
+      {resultado:"VCE", deps:["VC","VE"],                           fn:v=>v.VC-v.VE,                tex:"V_{CE} = V_C - V_E"},
+      // inversas
+      {resultado:"RB",  deps:["VTH","VBE","IB","RTH","beta","RE"], fn:v=>(v.VTH-v.VBE)/v.IB-v.RTH-(v.beta+1)*v.RE, tex:"R_B = \\frac{V_{TH}-V_{BE}}{I_B}-R_{TH}-(\\beta+1)R_E"},
+      {resultado:"RC",  deps:["VCC","VC","IC"],                     fn:v=>(v.VCC-v.VC)/v.IC,        tex:"R_C = (V_{CC}-V_C)/I_C"},
+      {resultado:"RE",  deps:["VE","IE"],                           fn:v=>v.VE/v.IE,                tex:"R_E = V_E/I_E"},
+      {resultado:"R1",  deps:["VTH","VCC","R2"],                    fn:v=>v.R2*(v.VCC/v.VTH-1),     tex:"R_1 = R_2(\\frac{V_{CC}}{V_{TH}}-1)"},
+      {resultado:"R2",  deps:["VTH","VCC","R1"],                    fn:v=>v.R1*v.VTH/(v.VCC-v.VTH), tex:"R_2 = \\frac{R_1 V_{TH}}{V_{CC}-V_{TH}}"},
+      {resultado:"beta",deps:["IC","IB"],                           fn:v=>v.IC/v.IB,                tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  /* ============================================================
+     CON DOS FUENTES DE TENSIÓN
+     ============================================================ */
+  {
+    id: 11,
+    nombre: "Dos fuentes: base y colector",
+    categoria: "Con dos fuentes de tensión",
+    imagen: "img/11_dos_fuentes_base_colector.png",
+    descripcion: "Circuito con dos fuentes: VCC en el colector (a través de RC) y VBB en la base (a través de RB). La base se polariza de forma independiente, lo que permite fijar IB con precisión.",
+    componentes: ["VCC", "VBB", "RB", "RC", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación del colector"},
+      VBB:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación de la base"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor (= 0)"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VBB","VBE","RB"],   fn:v=>(v.VBB-v.VBE)/v.RB,      tex:"I_B = \\dfrac{V_{BB}-V_{BE}}{R_B}"},
+      {resultado:"IC",  deps:["beta","IB"],        fn:v=>v.beta*v.IB,             tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["IC","IB"],          fn:v=>v.IC+v.IB,               tex:"I_E = I_C+I_B"},
+      {resultado:"VCE", deps:["VCC","IC","RC"],    fn:v=>v.VCC-v.IC*v.RC,         tex:"V_{CE} = V_{CC}-I_C R_C"},
+      {resultado:"VB",  deps:["VBE"],              fn:v=>v.VBE,                   tex:"V_B = V_{BE}"},
+      {resultado:"VC",  deps:["VCE"],              fn:v=>v.VCE,                   tex:"V_C = V_{CE}"},
+      {resultado:"VE",  deps:[],                   fn:v=>0,                       tex:"V_E = 0"},
+      {resultado:"VRC", deps:["IC","RC"],          fn:v=>v.IC*v.RC,               tex:"V_{RC} = I_C R_C"},
+      // inversas
+      {resultado:"VBB", deps:["IB","RB","VBE"],    fn:v=>v.IB*v.RB+v.VBE,         tex:"V_{BB} = I_B R_B + V_{BE}"},
+      {resultado:"VCC", deps:["VCE","IC","RC"],    fn:v=>v.VCE+v.IC*v.RC,         tex:"V_{CC} = V_{CE}+I_C R_C"},
+      {resultado:"RB",  deps:["VBB","VBE","IB"],   fn:v=>(v.VBB-v.VBE)/v.IB,      tex:"R_B = \\dfrac{V_{BB}-V_{BE}}{I_B}"},
+      {resultado:"RC",  deps:["VCC","VCE","IC"],   fn:v=>(v.VCC-v.VCE)/v.IC,      tex:"R_C = \\dfrac{V_{CC}-V_{CE}}{I_C}"},
+      {resultado:"beta",deps:["IC","IB"],          fn:v=>v.IC/v.IB,               tex:"\\beta = I_C/I_B"},
+      {resultado:"VBE", deps:["VBB","IB","RB"],    fn:v=>v.VBB-v.IB*v.RB,         tex:"V_{BE} = V_{BB}-I_B R_B"},
+    ],
+  },
+
+  {
+    id: 12,
+    nombre: "Dos fuentes: colector y emisor",
+    categoria: "Con dos fuentes de tensión",
+    imagen: "img/12_dos_fuentes_colector_emisor.png",
+    descripcion: "Circuito con VCC en el colector (a través de RC) y VEE en el emisor (a través de RE, con polaridad que alimenta al emisor). La base está conectada a tierra. La corriente IE queda fijada principalmente por VEE y RE.",
+    componentes: ["VCC", "VEE", "RC", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión positiva en el colector"},
+      VEE:  {tipo:"input",  unidad:"V", desc:"Tensión en el emisor (referida a tierra)"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base (= 0)"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"IE",  deps:["VEE","VBE","RE"],    fn:v=>(v.VEE-v.VBE)/v.RE,      tex:"I_E = \\dfrac{V_{EE}-V_{BE}}{R_E}"},
+      {resultado:"IC",  deps:["beta","IE"],         fn:v=>v.beta/(v.beta+1)*v.IE,  tex:"I_C = \\dfrac{\\beta}{\\beta+1} I_E \\approx I_E"},
+      {resultado:"IB",  deps:["beta","IE"],         fn:v=>v.IE/(v.beta+1),         tex:"I_B = \\dfrac{I_E}{\\beta+1}"},
+      {resultado:"IB",  deps:["IC","beta"],         fn:v=>v.IC/v.beta,             tex:"I_B = I_C/\\beta"},
+      {resultado:"VE",  deps:["VBE"],               fn:v=>-v.VBE,                  tex:"V_E = -V_{BE}\\;\\; (\\text{base a tierra})"},
+      {resultado:"VB",  deps:[],                    fn:v=>0,                       tex:"V_B = 0"},
+      {resultado:"VC",  deps:["VCC","IC","RC"],     fn:v=>v.VCC-v.IC*v.RC,         tex:"V_C = V_{CC}-I_C R_C"},
+      {resultado:"VRC", deps:["IC","RC"],           fn:v=>v.IC*v.RC,               tex:"V_{RC} = I_C R_C"},
+      {resultado:"VRE", deps:["IE","RE"],           fn:v=>v.IE*v.RE,               tex:"V_{RE} = I_E R_E"},
+      {resultado:"VCE", deps:["VC","VE"],           fn:v=>v.VC-v.VE,               tex:"V_{CE} = V_C - V_E"},
+      // inversas
+      {resultado:"VEE", deps:["IE","RE","VBE"],     fn:v=>v.IE*v.RE+v.VBE,         tex:"V_{EE} = I_E R_E + V_{BE}"},
+      {resultado:"RE",  deps:["VEE","VBE","IE"],    fn:v=>(v.VEE-v.VBE)/v.IE,      tex:"R_E = \\dfrac{V_{EE}-V_{BE}}{I_E}"},
+      {resultado:"RC",  deps:["VCC","VC","IC"],     fn:v=>(v.VCC-v.VC)/v.IC,       tex:"R_C = \\dfrac{V_{CC}-V_C}{I_C}"},
+      {resultado:"VCC", deps:["VC","IC","RC"],      fn:v=>v.VC+v.IC*v.RC,          tex:"V_{CC} = V_C + I_C R_C"},
+      {resultado:"beta",deps:["IE","IB"],           fn:v=>v.IE/v.IB-1,             tex:"\\beta = I_E/I_B - 1"},
+    ],
+  },
+
+  {
+    id: 13,
+    nombre: "Dos fuentes: base y emisor",
+    categoria: "Con dos fuentes de tensión",
+    imagen: "img/13_dos_fuentes_base_emisor.png",
+    descripcion: "Circuito con VBB en la base (a través de RB) y VEE en el emisor (a través de RE). El colector se conecta directamente a VCC (sin RC). Habitualmente VEE es negativa, de modo que la corriente de emisor sale hacia VEE.",
+    componentes: ["VCC", "VBB", "VEE", "RB", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión en el colector (= VC)"},
+      VBB:  {tipo:"input",  unidad:"V", desc:"Tensión de la base"},
+      VEE:  {tipo:"input",  unidad:"V", desc:"Tensión del emisor (negativa)"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector (= VCC)"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VBB","VEE","VBE","RB","beta","RE"], fn:v=>(v.VBB-v.VEE-v.VBE)/(v.RB+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{BB}-V_{EE}-V_{BE}}{R_B+(\\beta+1)R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],         fn:v=>v.beta*v.IB,            tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],         fn:v=>(v.beta+1)*v.IB,        tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VE",  deps:["VEE","IE","RE"],     fn:v=>v.VEE+v.IE*v.RE,        tex:"V_E = V_{EE} + I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],          fn:v=>v.VE+v.VBE,             tex:"V_B = V_E + V_{BE}"},
+      {resultado:"VC",  deps:["VCC"],               fn:v=>v.VCC,                  tex:"V_C = V_{CC}"},
+      {resultado:"VCE", deps:["VCC","VE"],          fn:v=>v.VCC-v.VE,             tex:"V_{CE} = V_{CC} - V_E"},
+      {resultado:"VRE", deps:["IE","RE"],           fn:v=>v.IE*v.RE,              tex:"V_{RE} = I_E R_E"},
+      // inversas
+      {resultado:"RB",  deps:["VBB","VEE","VBE","IB","beta","RE"], fn:v=>(v.VBB-v.VEE-v.VBE)/v.IB-(v.beta+1)*v.RE, tex:"R_B = \\frac{V_{BB}-V_{EE}-V_{BE}}{I_B}-(\\beta+1)R_E"},
+      {resultado:"RE",  deps:["VE","VEE","IE"],     fn:v=>(v.VE-v.VEE)/v.IE,      tex:"R_E = (V_E - V_{EE})/I_E"},
+      {resultado:"VBB", deps:["IB","RB","beta","RE","VEE","VBE"], fn:v=>v.IB*v.RB+(v.beta+1)*v.RE*v.IB/(v.beta+1)*0+v.VEE+v.VBE+(v.beta+1)*v.RE*v.IB, tex:"V_{BB} = I_B R_B+(\\beta+1)R_E I_B+V_{EE}+V_{BE}"},
+      {resultado:"VEE", deps:["VE","IE","RE"],      fn:v=>v.VE-v.IE*v.RE,         tex:"V_{EE} = V_E - I_E R_E"},
+      {resultado:"beta",deps:["IC","IB"],           fn:v=>v.IC/v.IB,              tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  {
+    id: 14,
+    nombre: "Dos fuentes: base, colector y emisor",
+    categoria: "Con dos fuentes de tensión",
+    imagen: "img/14_dos_fuentes_base_colector_emisor.png",
+    descripcion: "El montaje más completo con dos fuentes: VBB en la base (con RB), VCC en el colector (con RC) y VEE en el emisor (con RE). Combina todas las resistencias para máximo control del punto de operación.",
+    componentes: ["VCC", "VBB", "VEE", "RB", "RC", "RE", "β", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión del colector"},
+      VBB:  {tipo:"input",  unidad:"V", desc:"Tensión de la base"},
+      VEE:  {tipo:"input",  unidad:"V", desc:"Tensión del emisor (negativa)"},
+      RB:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor"},
+      beta: {tipo:"input",  unidad:"",  desc:"Ganancia β del transistor"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor (≈0.7 V Si)"},
+      IB:   {tipo:"output", unidad:"A", desc:"Corriente de base"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector"},
+      IE:   {tipo:"output", unidad:"A", desc:"Corriente de emisor"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VB:   {tipo:"output", unidad:"V", desc:"Tensión de base"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE:  {tipo:"output", unidad:"V", desc:"Caída en RE"},
+    },
+    formulas: [
+      {resultado:"IB",  deps:["VBB","VEE","VBE","RB","beta","RE"], fn:v=>(v.VBB-v.VEE-v.VBE)/(v.RB+(v.beta+1)*v.RE), tex:"I_B = \\dfrac{V_{BB}-V_{EE}-V_{BE}}{R_B+(\\beta+1)R_E}"},
+      {resultado:"IC",  deps:["beta","IB"],         fn:v=>v.beta*v.IB,            tex:"I_C = \\beta I_B"},
+      {resultado:"IE",  deps:["beta","IB"],         fn:v=>(v.beta+1)*v.IB,        tex:"I_E = (\\beta+1) I_B"},
+      {resultado:"VE",  deps:["VEE","IE","RE"],     fn:v=>v.VEE+v.IE*v.RE,        tex:"V_E = V_{EE} + I_E R_E"},
+      {resultado:"VB",  deps:["VE","VBE"],          fn:v=>v.VE+v.VBE,             tex:"V_B = V_E + V_{BE}"},
+      {resultado:"VC",  deps:["VCC","IC","RC"],     fn:v=>v.VCC-v.IC*v.RC,        tex:"V_C = V_{CC}-I_C R_C"},
+      {resultado:"VRC", deps:["IC","RC"],           fn:v=>v.IC*v.RC,              tex:"V_{RC} = I_C R_C"},
+      {resultado:"VRE", deps:["IE","RE"],           fn:v=>v.IE*v.RE,              tex:"V_{RE} = I_E R_E"},
+      {resultado:"VCE", deps:["VC","VE"],           fn:v=>v.VC-v.VE,              tex:"V_{CE} = V_C - V_E"},
+      // inversas
+      {resultado:"RB",  deps:["VBB","VEE","VBE","IB","beta","RE"], fn:v=>(v.VBB-v.VEE-v.VBE)/v.IB-(v.beta+1)*v.RE, tex:"R_B = \\frac{V_{BB}-V_{EE}-V_{BE}}{I_B}-(\\beta+1)R_E"},
+      {resultado:"RE",  deps:["VE","VEE","IE"],     fn:v=>(v.VE-v.VEE)/v.IE,      tex:"R_E = (V_E - V_{EE})/I_E"},
+      {resultado:"RC",  deps:["VCC","VC","IC"],     fn:v=>(v.VCC-v.VC)/v.IC,      tex:"R_C = (V_{CC}-V_C)/I_C"},
+      {resultado:"RC",  deps:["VRC","IC"],          fn:v=>v.VRC/v.IC,             tex:"R_C = V_{RC}/I_C"},
+      {resultado:"VEE", deps:["VE","IE","RE"],      fn:v=>v.VE-v.IE*v.RE,         tex:"V_{EE} = V_E - I_E R_E"},
+      {resultado:"VCC", deps:["VC","IC","RC"],      fn:v=>v.VC+v.IC*v.RC,         tex:"V_{CC} = V_C + I_C R_C"},
+      {resultado:"beta",deps:["IC","IB"],           fn:v=>v.IC/v.IB,              tex:"\\beta = I_C/I_B"},
+    ],
+  },
+
+  /* ============================================================
+     PAR DARLINGTON
+     ============================================================ */
+  {
+    id: 15,
+    nombre: "Par Darlington",
+    categoria: "Par Darlington",
+    imagen: "img/15_par_darlington.png",
+    descripcion: "Dos transistores Q1 y Q2 conectados en configuración Darlington. La ganancia total es el producto β1·β2 y la tensión base-emisor equivalente es el doble (≈1.4 V). Se utiliza cuando se necesita alta ganancia de corriente.",
+    componentes: ["VCC", "VBB", "RB1", "RC", "RE2", "β1", "β2", "VBE"],
+    variables: {
+      VCC:  {tipo:"input",  unidad:"V", desc:"Tensión de alimentación"},
+      VBB:  {tipo:"input",  unidad:"V", desc:"Tensión de la base"},
+      RB1:  {tipo:"input",  unidad:"Ω", desc:"Resistencia de base"},
+      RC:   {tipo:"input",  unidad:"Ω", desc:"Resistencia de colector"},
+      RE2:  {tipo:"input",  unidad:"Ω", desc:"Resistencia de emisor (Q2)"},
+      beta1:{tipo:"input",  unidad:"",  desc:"Ganancia β1 de Q1"},
+      beta2:{tipo:"input",  unidad:"",  desc:"Ganancia β2 de Q2"},
+      VBE:  {tipo:"input",  unidad:"V", desc:"Tensión base-emisor de cada transistor (≈0.7 V Si)"},
+      betaT:{tipo:"output", unidad:"",  desc:"Ganancia total βT = β1·β2"},
+      VBE_T:{tipo:"output", unidad:"V", desc:"Tensión base-emisor equivalente (2·VBE)"},
+      IB1:  {tipo:"output", unidad:"A", desc:"Corriente de base de Q1"},
+      IC1:  {tipo:"output", unidad:"A", desc:"Corriente de colector de Q1"},
+      IC2:  {tipo:"output", unidad:"A", desc:"Corriente de colector de Q2"},
+      IC:   {tipo:"output", unidad:"A", desc:"Corriente de colector total"},
+      IE2:  {tipo:"output", unidad:"A", desc:"Corriente de emisor de Q2"},
+      VCE:  {tipo:"output", unidad:"V", desc:"Tensión colector-emisor"},
+      VC:   {tipo:"output", unidad:"V", desc:"Tensión de colector"},
+      VE:   {tipo:"output", unidad:"V", desc:"Tensión de emisor"},
+      VRC:  {tipo:"output", unidad:"V", desc:"Caída en RC"},
+      VRE2: {tipo:"output", unidad:"V", desc:"Caída en RE2"},
+    },
+    formulas: [
+      {resultado:"betaT", deps:["beta1","beta2"],          fn:v=>v.beta1*v.beta2,                       tex:"\\beta_T = \\beta_1\\,\\beta_2"},
+      {resultado:"VBE_T",deps:["VBE"],                     fn:v=>2*v.VBE,                               tex:"V_{BE,T} = 2\\,V_{BE}"},
+      {resultado:"IB1",  deps:["VBB","VBE","RB1","beta1","beta2","RE2"], fn:v=>(v.VBB-2*v.VBE)/(v.RB1+(v.beta1+1)*(v.beta2+1)*v.RE2), tex:"I_{B1} = \\dfrac{V_{BB}-2V_{BE}}{R_{B1}+(\\beta_1+1)(\\beta_2+1)R_{E2}}"},
+      {resultado:"IC1",  deps:["beta1","IB1"],             fn:v=>v.beta1*v.IB1,                         tex:"I_{C1} = \\beta_1 I_{B1}"},
+      {resultado:"IB2",  deps:["beta1","IB1"],             fn:v=>(v.beta1+1)*v.IB1,                     tex:"I_{B2} = (\\beta_1+1) I_{B1}"},
+      {resultado:"IC2",  deps:["beta2","beta1","IB1"],     fn:v=>v.beta2*(v.beta1+1)*v.IB1,             tex:"I_{C2} = \\beta_2(\\beta_1+1) I_{B1}"},
+      {resultado:"IC",   deps:["IC1","IC2"],               fn:v=>v.IC1+v.IC2,                           tex:"I_C = I_{C1}+I_{C2}"},
+      {resultado:"IC",   deps:["beta1","beta2","IB1"],     fn:v=>(v.beta1*v.beta2+v.beta1+v.beta2)*v.IB1, tex:"I_C = (\\beta_T+\\beta_1+\\beta_2) I_{B1} \\approx \\beta_T I_{B1}"},
+      {resultado:"IE2",  deps:["beta1","beta2","IB1"],     fn:v=>(v.beta1+1)*(v.beta2+1)*v.IB1,         tex:"I_{E2} = (\\beta_1+1)(\\beta_2+1) I_{B1}"},
+      {resultado:"IE2",  deps:["IC","IB1"],                fn:v=>v.IC+v.IB1,                            tex:"I_{E2} = I_C + I_{B1}"},
+      {resultado:"VE",   deps:["IE2","RE2"],               fn:v=>v.IE2*v.RE2,                           tex:"V_E = I_{E2} R_{E2}"},
+      {resultado:"VC",   deps:["VCC","IC","RC"],           fn:v=>v.VCC-v.IC*v.RC,                       tex:"V_C = V_{CC} - I_C R_C"},
+      {resultado:"VRC",  deps:["IC","RC"],                 fn:v=>v.IC*v.RC,                             tex:"V_{RC} = I_C R_C"},
+      {resultado:"VRE2", deps:["IE2","RE2"],               fn:v=>v.IE2*v.RE2,                           tex:"V_{RE2} = I_{E2} R_{E2}"},
+      {resultado:"VCE",  deps:["VC","VE"],                 fn:v=>v.VC-v.VE,                             tex:"V_{CE} = V_C - V_E"},
+      // inversas útiles
+      {resultado:"RB1",  deps:["VBB","VBE","IB1","beta1","beta2","RE2"], fn:v=>(v.VBB-2*v.VBE)/v.IB1-(v.beta1+1)*(v.beta2+1)*v.RE2, tex:"R_{B1} = \\frac{V_{BB}-2V_{BE}}{I_{B1}}-(\\beta_1+1)(\\beta_2+1)R_{E2}"},
+      {resultado:"RE2",  deps:["VE","IE2"],                fn:v=>v.VE/v.IE2,                            tex:"R_{E2} = V_E/I_{E2}"},
+      {resultado:"RC",   deps:["VCC","VC","IC"],           fn:v=>(v.VCC-v.VC)/v.IC,                     tex:"R_C = (V_{CC}-V_C)/I_C"},
+      {resultado:"beta1",deps:["IC1","IB1"],               fn:v=>v.IC1/v.IB1,                           tex:"\\beta_1 = I_{C1}/I_{B1}"},
+      {resultado:"beta2",deps:["IC2","IB2","beta1","IB1"], fn:v=>v.IC2/((v.beta1+1)*v.IB1),             tex:"\\beta_2 = I_{C2}/((\\beta_1+1)I_{B1})"},
+    ],
+  },
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentCircuitId = null;
+let unknownVariables = new Set();  // conjunto de incógnitas (múltiples)
+let examMode = false;              // modo examen: oculta fórmulas y pasos
+
+/* ============================================================
+   RENDER: lista de circuitos en el sidebar
+   ============================================================ */
+function renderSidebar() {
+  const container = document.getElementById('circuit-list');
+  // Agrupar por categoría
+  const categorias = {};
+  circuitos.forEach(c => {
+    if (!categorias[c.categoria]) categorias[c.categoria] = [];
+    categorias[c.categoria].push(c);
+  });
+
+  let html = '';
+  let catIndex = 0;
+  for (const [catName, circuitosCat] of Object.entries(categorias)) {
+    html += `<div class="category" id="cat-${catIndex}">
+      <div class="category-title" onclick="toggleCategory(${catIndex})">
+        <span class="cat-left">
+          <svg class="cat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+          <span>${catName}</span>
+          <span class="cat-count">${circuitosCat.length}</span>
+        </span>
+      </div>
+      <div class="circuit-list">`;
+    circuitosCat.forEach(c => {
+      html += `<div class="circuit-item" data-id="${c.id}" onclick="selectCircuit(${c.id})">
+        <span class="circuit-num">${c.id}</span>
+        <span>${formatRichText(c.nombre)}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+    catIndex++;
+  }
+  container.innerHTML = html;
+}
+
+function toggleCategory(idx) {
+  const cat = document.getElementById(`cat-${idx}`);
+  if (!cat) return;
+  const willOpen = !cat.classList.contains('open');
+  // Cerrar todas las demás categorías (comportamiento de acordeón mutuamente excluyente)
+  document.querySelectorAll('.category').forEach(other => {
+    if (other !== cat) other.classList.remove('open');
+  });
+  // Abrir o cerrar la categoría pulsada
+  cat.classList.toggle('open', willOpen);
+}
+
+/* ============================================================
+   SELECCIÓN DE CIRCUITO
+   ============================================================ */
+function selectCircuit(id) {
+  const c = circuitos.find(c => c.id === id);
+  if (!c) return;
+  currentCircuitId = id;
+  unknownVariables = new Set();
+
+  // Actualizar sidebar
+  document.querySelectorAll('.circuit-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.id) === id);
+  });
+  // NOTA: No abrimos automáticamente la categoría del circuito seleccionado.
+  // El usuario controla qué acordeón está abierto; solo se abre/cierra al pulsar.
+
+  // Actualizar cabecera (con subíndices)
+  document.getElementById('circuit-title').innerHTML = `${c.id}. ${formatRichText(c.nombre)}`;
+  document.getElementById('circuit-subtitle').textContent = c.categoria;
+  document.getElementById('circuit-description').innerHTML = formatRichText(c.descripcion);
+
+  // Componentes
+  document.getElementById('circuit-components').innerHTML = c.componentes
+    .map(comp => `<span class="component-chip">${formatRichText(comp)}</span>`).join('');
+
+  // Imagen
+  document.getElementById('circuit-image').src = c.imagen;
+  document.getElementById('circuit-image').alt = `Circuito ${c.id}: ${c.nombre}`;
+
+  // Variables
+  renderVariables(c);
+
+  // Fórmulas
+  renderFormulas(c);
+
+  // Limpiar paneles
+  document.getElementById('result-panel').classList.remove('visible');
+  document.getElementById('error-panel').classList.remove('visible');
+  updateUnknownIndicator();
+}
+
+/* ============================================================
+   RENDER: variables
+   ============================================================ */
+function renderVariables(c) {
+  const grid = document.getElementById('variables-grid');
+  let html = '';
+  for (const [name, info] of Object.entries(c.variables)) {
+    const display = formatVarName(name);
+    const isUnknown = unknownVariables.has(name);
+    const shownUnit = displayUnit(info);
+    const placeholderText = placeholderFor(info);
+    html += `
+      <div class="variable-input ${isUnknown ? 'unknown' : ''}" data-var="${name}">
+        <div class="var-label">
+          <span class="var-name">${display}</span>
+          <span class="var-type-badge ${info.tipo}">${info.tipo === 'input' ? 'dato' : 'calc'}</span>
+        </div>
+        <div class="var-input-row">
+          <input type="text" inputmode="decimal" placeholder="${placeholderText}" data-var="${name}"
+                 onchange="onInputChange('${name}', this.value)" oninput="onInputChange('${name}', this.value)" />
+          <span class="var-unit">${shownUnit}</span>
+          <button class="var-unknown-btn ${isUnknown ? 'active' : ''}" title="Marcar como incógnita"
+                  onclick="toggleUnknown('${name}')">?</button>
+        </div>
+        <div class="var-desc">${formatRichText(info.desc)}</div>
+      </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// Devuelve la unidad a MOSTRAR al usuario (puede diferir de la interna).
+function displayUnit(info) {
+  if (!info) return '';
+  // Las resistencias de entrada se introducen en kΩ
+  if (info.unidad === 'Ω' && info.tipo === 'input') return 'kΩ';
+  return info.unidad || '';
+}
+
+// Devuelve un placeholder informativo (con ejemplo de formato) para el input.
+function placeholderFor(info) {
+  if (!info) return '—';
+  if (info.unidad === 'Ω' && info.tipo === 'input') return 'ej. 2.3 ó 2K3';
+  if (info.unidad === 'A' && info.tipo === 'output') return '—';
+  if (info.unidad === 'V' && info.tipo === 'input') return 'ej. 12';
+  return '—';
+}
+
+function formatVarName(name) {
+  // Convierte cualquier nombre de variable a HTML con subíndices correctos.
+  // Reglas:
+  //  - "beta" → β ; "beta1","beta2","betaT" → β₁, β₂, β_T
+  //  - El primer carácter (V, I, R) se mantiene en mayúscula
+  //  - Los dígitos o letras después del bloque principal → subíndice
+  //  - Variables especiales: VBE_T → V_BE,T ; R1 → R₁ ; R2 → R₂
+  const special = {
+    beta:  'β',
+    beta1: 'β<sub>1</sub>',
+    beta2: 'β<sub>2</sub>',
+    betaT: 'β<sub>T</sub>',
+    VBE_T: 'V<sub>BE,T</sub>',
+    R1:    'R<sub>1</sub>',
+    R2:    'R<sub>2</sub>',
+    VTH:   'V<sub>TH</sub>',
+    RTH:   'R<sub>TH</sub>',
+  };
+  if (special[name]) return special[name];
+
+  // Caso general: 
+  //  - prefijo de 1-2 letras (V, I, R, Vx, etc.)
+  //  - resto → subíndice (manteniendo mayúsculas/minúsculas originales)
+  const m = name.match(/^([VIR])([A-Za-z0-9]+)$/);
+  if (m) {
+    return `${m[1]}<sub>${m[2]}</sub>`;
+  }
+  return name;
+}
+
+// Versión en texto plano (sin HTML) para lugares donde no se renderiza HTML
+function formatVarNamePlain(name) {
+  return formatVarName(name).replace(/<sub>/g, '_').replace(/<\/sub>/g, '');
+}
+
+// Formatea un texto libre que contiene nombres de variables (VCC, RC, VBE, RE2, β, etc.)
+// reemplazándolos por HTML con subíndices correctos.
+function formatRichText(text) {
+  if (!text) return '';
+  // Orden: primero las variables más largas para evitar reemplazos parciales
+  const tokens = [
+    ['VBE_T','V<sub>BE,T</sub>'],
+    ['betaT','β<sub>T</sub>'],
+    ['beta1','β<sub>1</sub>'],
+    ['beta2','β<sub>2</sub>'],
+    ['beta','β'],
+    ['VTH','V<sub>TH</sub>'],
+    ['RTH','R<sub>TH</sub>'],
+    ['VCC','V<sub>CC</sub>'],
+    ['VBB','V<sub>BB</sub>'],
+    ['VEE','V<sub>EE</sub>'],
+    ['VCE','V<sub>CE</sub>'],
+    ['VBE','V<sub>BE</sub>'],
+    ['VRC','V<sub>RC</sub>'],
+    ['VRE2','V<sub>RE2</sub>'],
+    ['VRE','V<sub>RE</sub>'],
+    ['RE2','R<sub>E2</sub>'],
+    ['RB1','R<sub>B1</sub>'],
+    ['RC','R<sub>C</sub>'],
+    ['RE','R<sub>E</sub>'],
+    ['RB','R<sub>B</sub>'],
+    ['IB1','I<sub>B1</sub>'],
+    ['IB2','I<sub>B2</sub>'],
+    ['IC1','I<sub>C1</sub>'],
+    ['IC2','I<sub>C2</sub>'],
+    ['IE2','I<sub>E2</sub>'],
+    ['IB','I<sub>B</sub>'],
+    ['IC','I<sub>C</sub>'],
+    ['IE','I<sub>E</sub>'],
+    ['VB','V<sub>B</sub>'],
+    ['VC','V<sub>C</sub>'],
+    ['VE','V<sub>E</sub>'],
+    ['R1','R<sub>1</sub>'],
+    ['R2','R<sub>2</sub>'],
+  ];
+  // Usar placeholders para evitar reemplazos anidados
+  const placeholders = [];
+  let result = text;
+  for (const [from, to] of tokens) {
+    // No reemplazar si la palabra continúa con letra o dígito (boundary)
+    const re = new RegExp(`\\b${from}\\b`, 'g');
+    result = result.replace(re, () => {
+      const ph = `\x00${placeholders.length}\x00`;
+      placeholders.push(to);
+      return ph;
+    });
+  }
+  // Restaurar placeholders
+  result = result.replace(/\x00(\d+)\x00/g, (m, i) => placeholders[parseInt(i)]);
+  return result;
+}
+
+function onInputChange(name, value) {
+  const input = document.querySelector(`input[data-var="${name}"]`);
+  if (input) {
+    const wrap = input.closest('.variable-input');
+    if (value.trim() !== '') {
+      wrap.classList.add('filled');
+    } else {
+      wrap.classList.remove('filled');
+    }
+  }
+  // Si el usuario escribe en un input marcado como incógnita, desmarcarla
+  if (unknownVariables.has(name) && value.trim() !== '') {
+    toggleUnknown(name);
+  }
+}
+
+function toggleUnknown(name) {
+  if (unknownVariables.has(name)) {
+    unknownVariables.delete(name);
+    // Restaurar input
+    const input = document.querySelector(`input[data-var="${name}"]`);
+    if (input) { input.disabled = false; }
+    const wrap = document.querySelector(`.variable-input[data-var="${name}"]`);
+    if (wrap) wrap.classList.remove('unknown');
+    const btn = document.querySelector(`.variable-input[data-var="${name}"] .var-unknown-btn`);
+    if (btn) btn.classList.remove('active');
+  } else {
+    unknownVariables.add(name);
+    // Marcar input como incógnita
+    const input = document.querySelector(`input[data-var="${name}"]`);
+    if (input) { input.value = ''; input.disabled = true; }
+    const wrap = document.querySelector(`.variable-input[data-var="${name}"]`);
+    if (wrap) { wrap.classList.add('unknown'); wrap.classList.remove('filled'); }
+    const btn = document.querySelector(`.variable-input[data-var="${name}"] .var-unknown-btn`);
+    if (btn) btn.classList.add('active');
+  }
+  updateUnknownIndicator();
+  // Ocultar resultado/error anteriores
+  document.getElementById('result-panel').classList.remove('visible');
+  document.getElementById('error-panel').classList.remove('visible');
+}
+
+function updateUnknownIndicator() {
+  const el = document.getElementById('unknown-name');
+  if (unknownVariables.size === 0) {
+    el.innerHTML = '— (pulsa ? junto a las variables)';
+  } else {
+    const names = Array.from(unknownVariables).map(formatVarName).join(', ');
+    el.innerHTML = `${names} <span style="color:var(--text-muted); font-size:0.85rem;">(${unknownVariables.size})</span>`;
+  }
+}
+
+/* ============================================================
+   MODO EXAMEN
+   ============================================================ */
+function toggleExamMode() {
+  examMode = !examMode;
+  document.body.classList.toggle('examen-mode', examMode);
+  document.getElementById('exam-toggle').classList.toggle('active', examMode);
+}
+
+/* ============================================================
+   RENDER: fórmulas (LaTeX)
+   ============================================================ */
+function renderFormulas(c) {
+  const container = document.getElementById('formulas-list');
+  // Mostrar solo las fórmulas "principales" (no inversas redundantes)
+  const vistas = new Set();
+  const unicas = c.formulas.filter(f => {
+    const key = f.resultado + '|' + f.tex;
+    if (vistas.has(key)) return false;
+    vistas.add(key);
+    return true;
+  });
+  let html = unicas.map(f => {
+    const display = formatVarName(f.resultado);
+    return `<div class="formula-item">$$${f.tex}$$</div>`;
+  }).join('');
+  container.innerHTML = html;
+  // Re-render MathJax
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise([container]).catch(()=>{});
+  }
+}
+
+/* ============================================================
+   SOLVER: propagación de restricciones
+   ============================================================ */
+function collectInputs() {
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  const values = {};
+  for (const name of Object.keys(c.variables)) {
+    if (unknownVariables.has(name)) continue;
+    const input = document.querySelector(`input[data-var="${name}"]`);
+    if (!input) continue;
+    const raw = input.value.trim();
+    if (raw === '') continue;
+    // Para resistencias (unidad Ω) interpretar el valor en kiloohmios por defecto.
+    // Admite: "2.3" = 2.3 kΩ = 2300 Ω, "2,3" = ídem, "2K3" = ídem,
+    // "2.3k" = ídem, "2300" = 2300 Ω (no 2300 kΩ), "4.7M" = 4.7 MΩ.
+    const info = c.variables[name];
+    const defaultUnit = (info && info.unidad === 'Ω' && info.tipo === 'input') ? 'k' : null;
+    const val = parseValue(raw, defaultUnit);
+    if (val === null || isNaN(val)) continue;
+    values[name] = val;
+  }
+  return values;
+}
+
+function parseValue(str, defaultUnit = null) {
+  // defaultUnit: 'k' (kilo) para resistencias -> "2.3" se interpreta como 2.3 kΩ
+  if (str === null || str === undefined) return null;
+  str = String(str).trim().replace(',', '.');
+  if (str === '') return null;
+
+  // Tabla de multiplicadores. Letras mayúsculas y minúsculas se aceptan igual,
+  // excepto 'M'/'m' que diferencian mega de mili respectivamente.
+  const multOf = (letter) => {
+    if (!letter) return null;
+    const map = {
+      p:1e-12, n:1e-9, u:1e-6,
+      r:1, R:1,
+      k:1e3, K:1e3,
+      M:1e6,   // mega (mayúscula)
+      m:1e-3,  // mili (minúscula)
+      g:1e9, G:1e9,
+    };
+    return map[letter] !== undefined ? map[letter] : null;
+  };
+
+  // 1) Notación "2K3", "4R7", "1M5", "2k3" -> la letra es separador decimal
+  //    Sólo admitimos K/k (kilo), M (mega), R/r (ohmio) en esta forma.
+  const m1 = str.match(/^(\d+)([KkMRr])(\d+)$/);
+  if (m1) {
+    const num = parseFloat(m1[1] + '.' + m1[3]);
+    const mult = multOf(m1[2]);
+    if (mult !== null) return num * mult;
+  }
+
+  // 2) Notación con sufijo explícito: "4.7k", "1M", "10m", "100R"
+  const m2 = str.match(/^([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*([pnumkKrRMGgR]?)$/);
+  if (m2) {
+    const num = parseFloat(m2[1]);
+    if (isNaN(num)) return null;
+    const suffix = m2[2];
+    if (suffix === '') {
+      // Sin sufijo: aplicar defaultUnit
+      return (defaultUnit === 'k') ? num * 1e3 : num;
+    }
+    const mult = multOf(suffix);
+    if (mult !== null) return num * mult;
+  }
+
+  // 3) Número puro sin sufijo: aplicar defaultUnit si se especificó.
+  //    Para resistencias (defaultUnit='k') el valor se interpreta SIEMPRE en kΩ:
+  //    "2.3" = 2.3 kΩ, "100" = 100 kΩ, "0.5" = 0.5 kΩ = 500 Ω.
+  //    Si el usuario necesita introducir ohmios directamente, debe usar sufijo R: "470R".
+  const num = parseFloat(str);
+  if (isNaN(num)) return null;
+  if (defaultUnit === 'k') return num * 1e3;
+  return num;
+}
+
+function formatValue(val, unit = null) {
+  if (val === null || val === undefined || isNaN(val)) return '—';
+  const abs = Math.abs(val);
+  if (abs === 0) return '0';
+
+  // Si la unidad es Ω (resistencia), mostrar en kΩ o MΩ según magnitud
+  if (unit === 'Ω') {
+    if (abs < 1e3) return val.toPrecision(4) + ' Ω';
+    if (abs < 1e6) return (val/1e3).toPrecision(5) + ' kΩ';
+    if (abs < 1e9) return (val/1e6).toPrecision(5) + ' MΩ';
+    return (val/1e9).toPrecision(5) + ' GΩ';
+  }
+
+  // Para corrientes (A) y tensiones (V): usar notación ingenieril estándar
+  if (abs < 1e-9) return (val*1e12).toPrecision(4) + ' p';
+  if (abs < 1e-6) return (val*1e9).toPrecision(4) + ' n';
+  if (abs < 1e-3) return (val*1e6).toPrecision(4) + ' µ';
+  if (abs < 1) return (val*1e3).toPrecision(4) + ' m';
+  if (abs < 1e3) return val.toPrecision(5);
+  if (abs < 1e6) return (val/1e3).toPrecision(5) + ' k';
+  if (abs < 1e9) return (val/1e6).toPrecision(5) + ' M';
+  return (val/1e9).toPrecision(5) + ' G';
+}
+
+function solve(targets, initialValues) {
+  // targets: array de variables a calcular
+  // initialValues: objeto con valores conocidos
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  const ctx = {...initialValues};
+  const steps = []; // {var, value, tex, deps}
+  const targetSet = new Set(targets);
+  let changed = true;
+  let iter = 0;
+  const MAX_ITER = 300;
+
+  while (changed && iter < MAX_ITER) {
+    changed = false;
+    iter++;
+    for (const f of c.formulas) {
+      // Solo calcular si el resultado no está ya en ctx
+      if (ctx[f.resultado] !== undefined) continue;
+      // No calcular una variable que el usuario ha marcado como conocida
+      // (ya está en initialValues por collectInputs, así que ctx[f.resultado] !== undefined la cubre)
+      if (f.deps.every(d => ctx[d] !== undefined)) {
+        try {
+          const val = f.fn(ctx);
+          if (val !== null && val !== undefined && !isNaN(val) && isFinite(val)) {
+            ctx[f.resultado] = val;
+            // Solo guardar el paso si conduce a un target o a una de sus dependencias
+            steps.push({var: f.resultado, value: val, tex: f.tex, deps: [...f.deps]});
+            changed = true;
+          }
+        } catch(e) { /* ignore */ }
+      }
+    }
+  }
+  // Verificar qué targets se pudieron calcular
+  const results = {};
+  let allOk = true;
+  for (const t of targets) {
+    if (ctx[t] !== undefined) {
+      results[t] = {ok: true, value: ctx[t]};
+    } else {
+      results[t] = {ok: false};
+      allOk = false;
+    }
+  }
+  return {ok: allOk, results, ctx, steps};
+}
+
+/* ============================================================
+   DETECCIÓN DE SATURACIÓN / CORTE
+   ============================================================
+   Tras calcular en activa, comprobamos el VCE obtenido:
+     - Si VCE < VCE(sat)  → SATURACIÓN
+     - Si IB ≤ 0           → CORTE (no hay corriente)
+   En saturación se recalculan las magnitudes con:
+     - VCE = VCE(sat) ≈ 0.2 V
+     - IC(sat) = (VCC − VCE(sat)) / RC   (si hay RC)
+              o  IC(sat) = (VCC − VCE(sat)) / RC  con RE incluido si procede
+     - IB(sat) = IC(sat) / β
+     - IE = IC + IB  (usando el IB real que aporta el circuito)
+   Devuelve un objeto con: estado, VCEsat, IBreal, ICsat, IBsat, factor
+   ============================================================ */
+function detectSaturation(c, ctx, targets) {
+  const result = {
+    estado: 'activa',   // 'activa' | 'saturacion' | 'corte'
+    vceActiv: null,
+    vceSat: VCE_SAT_DEFAULT,
+    ibReal: null,
+    icSat: null,
+    ibSat: null,
+    factor: null,        // IB(real) / IB(sat); ≥1 ⇒ saturado
+    recalc: {},          // valores recalculados en saturación
+    razon: '',
+  };
+
+  // Necesitamos VCE calculado (en activa) y al menos IB o IC
+  if (ctx.VCE === undefined && !targets.includes('VCE')) {
+    // Si el usuario pidió VCE como incógnita, ctx.VCE ya estará (o no se pudo calcular)
+  }
+  const vce = ctx.VCE;
+  const ib = ctx.IB;
+  const ic = ctx.IC;
+  const beta = ctx.beta || ctx.beta1;  // para Darlington usamos beta1 aprox
+  const vcc = ctx.VCC;
+  const vbb = ctx.VBB;
+  const vee = ctx.VEE;
+  const rc = ctx.RC;
+  const re = ctx.RE;
+
+  // 1) Comprobación de CORTE: si IB ≤ 0 o IC ≤ 0, no hay conducción
+  if ((ib !== undefined && ib <= 0) || (ic !== undefined && ic <= 0 && vce === undefined)) {
+    result.estado = 'corte';
+    result.razon = 'La corriente de base calculada es nula o negativa, lo que indica que el transistor está en CORTE (no conduce).';
+    result.recalc = {
+      IB: 0, IC: 0, IE: 0,
+      VCE: (vcc !== undefined) ? vcc : null,
+      VB: (vcc !== undefined) ? 0 : null,
+      VC: (vcc !== undefined) ? vcc : null,
+      VE: 0,
+    };
+    return result;
+  }
+
+  // 2) Comprobación de SATURACIÓN: VCE calculado < VCE(sat)
+  if (vce !== undefined && vce < VCE_SAT_DEFAULT) {
+    result.estado = 'saturacion';
+    result.vceActiv = vce;
+    result.vceSat = VCE_SAT_DEFAULT;
+
+    // Calcular IC(sat): corriente máxima que puede circular por RC (y RE si existe)
+    // Caso general con VCC + RC + (RE si existe) + VCE(sat):
+    //   IC(sat) ≈ (VCC − VCE(sat)) / (RC + RE·(β+1)/β)  ≈  (VCC − VCE(sat)) / RC  si no hay RE
+    // Para mantenerlo simple y didáctico, usamos:
+    //   IC(sat) = (VCC − VCE(sat)) / RC   (cuando hay RC)
+    // Para circuitos con emisor a masa (sin RE) y con RE ≈ 0:
+    //   IE(sat) ≈ IC(sat);  VE = IE·RE
+    let icSat = null;
+    if (rc !== undefined && vcc !== undefined) {
+      // Si hay RE, la corriente circula por RC y RE; aproximanmos IC ≈ IE
+      if (re !== undefined && re > 0) {
+        // VCC = IC·RC + VCE(sat) + IE·RE ; con IE ≈ IC:
+        icSat = (vcc - VCE_SAT_DEFAULT) / (rc + re);
+      } else {
+        icSat = (vcc - VCE_SAT_DEFAULT) / rc;
+      }
+    }
+    result.icSat = icSat;
+
+    // IB(sat) = IC(sat) / β
+    if (icSat !== null && beta !== undefined && beta > 0) {
+      result.ibSat = icSat / beta;
+    }
+
+    // IB real (la que aporta el circuito en activa)
+    result.ibReal = ib;
+
+    // Factor de saturación
+    if (result.ibReal !== null && result.ibSat !== null && result.ibSat > 0) {
+      result.factor = result.ibReal / result.ibSat;
+    }
+
+    // Construir valores recalculados en saturación
+    result.recalc = {
+      VCE: VCE_SAT_DEFAULT,
+    };
+    if (icSat !== null) {
+      result.recalc.IC = icSat;
+      // En saturación, IE = IC + IB (con IB real, no IB(sat))
+      if (ib !== undefined) result.recalc.IE = icSat + ib;
+      // VC = VCC − IC·RC
+      if (vcc !== undefined && rc !== undefined) result.recalc.VC = vcc - icSat * rc;
+      else if (vcc !== undefined) result.recalc.VC = vcc - VCE_SAT_DEFAULT;  // si VC = VCE
+      // VRC = IC·RC
+      if (rc !== undefined) result.recalc.VRC = icSat * rc;
+      // VE = IE·RE (si hay RE)
+      if (re !== undefined && result.recalc.IE !== undefined) {
+        result.recalc.VE = result.recalc.IE * re;
+        result.recalc.VRE = result.recalc.IE * re;
+      } else {
+        result.recalc.VE = 0;
+      }
+      // VB = VE + VBE (si está VBE disponible)
+      if (ctx.VBE !== undefined && result.recalc.VE !== undefined) {
+        result.recalc.VB = result.recalc.VE + ctx.VBE;
+      }
+    }
+
+    result.razon = `El V<sub>CE</sub> calculado en activa (${formatValue(vce, 'V')} V) es menor que V<sub>CE(sat)</sub> ≈ ${VCE_SAT_DEFAULT} V. El transistor no puede estar en activa: está <strong>SATURADO</strong>. En saturación, V<sub>CE</sub> se fija en ${VCE_SAT_DEFAULT} V y la corriente de colector la determina el circuito externo (no β).`;
+    return result;
+  }
+
+  // 3) Caso normal: activa
+  result.estado = 'activa';
+  result.razon = 'El transistor trabaja en zona ACTIVA. V<sub>CE</sub> > V<sub>CE(sat)</sub>, luego IC = β·IB es válida.';
+  return result;
+}
+
+/* ============================================================
+   CALCULAR
+   ============================================================ */
+function calcular() {
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  const errorPanel = document.getElementById('error-panel');
+  const resultPanel = document.getElementById('result-panel');
+  errorPanel.classList.remove('visible');
+  resultPanel.classList.remove('visible');
+
+  if (unknownVariables.size === 0) {
+    showError('Selecciona al menos una incógnita pulsando el botón ? junto a la variable que quieres calcular. Puedes marcar varias a la vez.');
+    return;
+  }
+
+  const inputs = collectInputs();
+  // Rellenar VBE por defecto si no se ha introducido y no es incógnita
+  if (inputs.VBE === undefined && c.variables.VBE && !unknownVariables.has('VBE')) inputs.VBE = VBE_DEFAULT;
+
+  const targets = Array.from(unknownVariables);
+  const result = solve(targets, inputs);
+
+  // ===== Detección de saturación / corte =====
+  // Sólo se comprueba si el cálculo en activa pudo determinar VCE o IB.
+  const satInfo = detectSaturation(c, result.ctx, targets);
+  const isSaturated = (satInfo.estado === 'saturacion');
+  const isCutoff = (satInfo.estado === 'corte');
+
+  // Renderizar banner de saturación / corte
+  const satBanner = document.getElementById('saturation-banner');
+  if (isSaturated || isCutoff) {
+    const icon = isSaturated
+      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`
+      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`;
+    const tag = isSaturated ? 'Saturación' : 'Corte';
+    let recalcHtml = '';
+    if (isSaturated) {
+      const rows = [];
+      if (satInfo.icSat !== null) rows.push(`<span class="var">I<sub>C(sat)</sub> =</span><span class="val">${formatValue(satInfo.icSat, 'A')} A</span>`);
+      if (satInfo.ibSat !== null) rows.push(`<span class="var">I<sub>B(sat)</sub> =</span><span class="val">${formatValue(satInfo.ibSat, 'A')} A</span>`);
+      if (satInfo.ibReal !== null && satInfo.ibSat !== null) rows.push(`<span class="var">I<sub>B(real)</sub> =</span><span class="val">${formatValue(satInfo.ibReal, 'A')} A</span>`);
+      if (satInfo.factor !== null) {
+        const fs = satInfo.factor.toFixed(2);
+        rows.push(`<span class="var">Factor de saturación =</span><span class="val">${fs}</span>`);
+      }
+      if (rows.length) {
+        recalcHtml = `<div class="saturation-recalc">
+          <div class="saturation-recalc-title">Magnitudes en saturación</div>
+          <div class="saturation-recalc-row">${rows.join('')}</div>
+        </div>`;
+      }
+    } else if (isCutoff) {
+      recalcHtml = `<div class="saturation-recalc">
+        <div class="saturation-recalc-title">Magnitudes en corte</div>
+        <div class="saturation-recalc-row">
+          <span class="var">I<sub>B</sub> =</span><span class="val">0 A</span>
+          <span class="var">I<sub>C</sub> =</span><span class="val">0 A</span>
+          <span class="var">I<sub>E</sub> =</span><span class="val">0 A</span>
+          ${result.ctx.VCC !== undefined ? `<span class="var">V<sub>CE</sub> =</span><span class="val">${formatValue(result.ctx.VCC, 'V')} V</span>` : ''}
+        </div>
+      </div>`;
+    }
+    satBanner.innerHTML = `<div class="saturation-banner ${isCutoff ? 'cutoff' : ''}">
+      <div class="saturation-icon">${icon}</div>
+      <div class="saturation-content">
+        <div class="saturation-title">
+          ${isSaturated ? 'Transistor en saturación' : 'Transistor en corte'}
+          <span class="tag">${tag}</span>
+        </div>
+        <div class="saturation-text">${satInfo.razon}</div>
+        ${recalcHtml}
+      </div>
+    </div>`;
+  } else {
+    satBanner.innerHTML = '';
+  }
+
+  // Renderizar grid de resultados (una tarjeta por incógnita).
+  // En saturación/corte, se muestran los valores recalculados en lugar de los de activa.
+  const resultsGrid = document.getElementById('results-grid');
+  const resultsHtml = targets.map(t => {
+    const info = c.variables[t];
+    const r = result.results[t];
+    if (r.ok) {
+      // Si hay saturación/corte y tenemos un valor recalculado para esta variable, usarlo
+      let displayValue = r.value;
+      let saturatedFlag = false;
+      if ((isSaturated || isCutoff) && satInfo.recalc[t] !== undefined) {
+        displayValue = satInfo.recalc[t];
+        saturatedFlag = true;
+      }
+      const valStr = formatValue(displayValue, info.unidad);
+      const unitSuffix = (info.unidad === 'Ω') ? '' : (info.unidad || '');
+      return `<div class="result-card-mini ${saturatedFlag ? 'saturated' : ''}">
+        <div class="result-variable">${formatVarName(t)} ${saturatedFlag ? '<span style="font-size:0.65rem; color:var(--warning); font-weight:600; margin-left:0.4rem;">SAT</span>' : ''} =</div>
+        <div><span class="result-value">${valStr}</span><span class="result-unit">${unitSuffix}</span></div>
+      </div>`;
+    } else {
+      return `<div class="result-card-mini failed">
+        <div class="result-variable">${formatVarName(t)} =</div>
+        <div><span class="result-value">no resuelta</span></div>
+      </div>`;
+    }
+  }).join('');
+  resultsGrid.innerHTML = resultsHtml;
+
+  // Si solo hay una incógnita, mostrar también el value-box grande
+  const valueBox = document.getElementById('result-value-box');
+  if (targets.length === 1 && result.results[targets[0]].ok) {
+    const t = targets[0];
+    const info = c.variables[t];
+    let displayValue = result.results[t].value;
+    if ((isSaturated || isCutoff) && satInfo.recalc[t] !== undefined) {
+      displayValue = satInfo.recalc[t];
+    }
+    valueBox.style.display = 'block';
+    document.getElementById('result-variable').innerHTML = `${formatVarName(t)} =`;
+    document.getElementById('result-value').textContent = formatValue(displayValue, info.unidad);
+    document.getElementById('result-unit').textContent = (info.unidad === 'Ω') ? '' : (info.unidad || '');
+  } else {
+    valueBox.style.display = 'none';
+  }
+
+  // Comprobar si hay errores
+  const failedTargets = targets.filter(t => !result.results[t].ok);
+  if (failedTargets.length > 0) {
+    const failedList = failedTargets.map(t => {
+      const missing = findMissingForTarget(c, t, inputs);
+      return `<div style="margin-top:0.5rem;">
+        <strong>${formatVarName(t)}</strong>${
+        missing.length ? ` — faltaría conocer: ${missing.map(formatVarName).join(', ')}` : ' — no hay fórmula aplicable con los datos dados.'}
+      </div>`;
+    }).join('');
+    showError(`No se pudo calcular ${failedTargets.length === 1 ? 'la incógnita' : `${failedTargets.length} de las incógnitas`}.${failedList}`);
+  }
+
+  // Pasos (solo se muestran si NO estamos en modo examen)
+  const stepsContainer = document.getElementById('result-steps');
+  const stepsWrap = document.getElementById('result-steps-wrap');
+  if (examMode) {
+    stepsWrap.style.display = 'none';
+    stepsContainer.innerHTML = '';
+  } else {
+    stepsWrap.style.display = 'block';
+    // Para múltiples incógnitas, mostrar los pasos de cada una en bloques separados
+    let stepsHtml = '';
+    if (targets.length === 1) {
+      const relevantSteps = filterRelevantSteps(result.steps, targets[0]);
+      stepsHtml = relevantSteps.map(s => buildStepHtml(s, c)).join('');
+    } else {
+      stepsHtml = targets.map(t => {
+        if (!result.results[t].ok) return '';
+        const relevantSteps = filterRelevantSteps(result.steps, t);
+        if (relevantSteps.length === 0) return '';
+        return `<div style="margin-bottom:1rem;">
+          <div style="color:var(--accent); font-weight:600; margin-bottom:0.4rem; font-size:0.95rem;">Cálculo de ${formatVarName(t)}</div>
+          ${relevantSteps.map(s => buildStepHtml(s, c)).join('')}
+        </div>`;
+      }).join('');
+    }
+    // Añadir bloque de recálculo en saturación/corte
+    if (isSaturated) {
+      const satRows = [];
+      satRows.push(`<div class="step" style="border-left-color: var(--warning);">
+        <div class="step-label" style="color: var(--warning);">V<sub>CE</sub> en saturación:</div>
+        $$V_{CE(sat)} \\approx ${VCE_SAT_DEFAULT}\\,\\text{V}$$
+        <div style="margin-top:0.3rem; color: var(--warning); font-family:'JetBrains Mono',monospace;">
+          V<sub>CE</sub> = ${VCE_SAT_DEFAULT} V (fijo)
+        </div>
+      </div>`);
+      if (satInfo.icSat !== null && result.ctx.RC !== undefined && result.ctx.VCC !== undefined) {
+        const reStr = result.ctx.RE ? ` + I_C R_E` : '';
+        const reDenom = result.ctx.RE ? ` + ${formatValue(result.ctx.RE, 'Ω')}` : '';
+        satRows.push(`<div class="step" style="border-left-color: var(--warning);">
+          <div class="step-label" style="color: var(--warning);">I<sub>C(sat)</sub> (corriente máxima):</div>
+          $$I_{C(sat)} = \\dfrac{V_{CC} - V_{CE(sat)}}{R_C${result.ctx.RE ? ' + R_E' : ''}}$$
+          <div style="margin-top:0.3rem; color: var(--success); font-family:'JetBrains Mono',monospace;">
+            I<sub>C(sat)</sub> = ${formatValue(satInfo.icSat, 'A')} A
+          </div>
+        </div>`);
+      }
+      if (satInfo.ibSat !== null) {
+        satRows.push(`<div class="step" style="border-left-color: var(--warning);">
+          <div class="step-label" style="color: var(--warning);">I<sub>B(sat)</sub> (mínima para saturar):</div>
+          $$I_{B(sat)} = \\dfrac{I_{C(sat)}}{\\beta}$$
+          <div style="margin-top:0.3rem; color: var(--success); font-family:'JetBrains Mono',monospace;">
+            I<sub>B(sat)</sub> = ${formatValue(satInfo.ibSat, 'A')} A
+          </div>
+        </div>`);
+      }
+      if (satInfo.factor !== null) {
+        satRows.push(`<div class="step" style="border-left-color: var(--warning);">
+          <div class="step-label" style="color: var(--warning);">Factor de saturación:</div>
+          $$k = \\dfrac{I_{B(real)}}{I_{B(sat)}}$$
+          <div style="margin-top:0.3rem; color: ${satInfo.factor >= 1 ? 'var(--success)' : 'var(--danger)'}; font-family:'JetBrains Mono',monospace;">
+            k = ${satInfo.factor.toFixed(3)} ${satInfo.factor >= 1 ? '→ confirmado: SATURADO' : '→ NO saturado (k < 1)'}
+          </div>
+        </div>`);
+      }
+      stepsHtml += `<div style="margin-top:1rem; padding-top:0.75rem; border-top:1px dashed rgba(245,158,11,0.4);">
+        <div style="color: var(--warning); font-weight:600; margin-bottom:0.5rem; font-size:0.95rem;">Recálculo en saturación</div>
+        ${satRows.join('')}
+      </div>`;
+    } else if (isCutoff) {
+      stepsHtml += `<div style="margin-top:1rem; padding-top:0.75rem; border-top:1px dashed rgba(99,102,241,0.4);">
+        <div style="color: #a5b4fc; font-weight:600; margin-bottom:0.5rem; font-size:0.95rem;">Magnitudes en corte</div>
+        <div class="step" style="border-left-color: #818cf8;">
+          <div class="step-label" style="color: #a5b4fc;">En corte:</div>
+          $$I_B = 0, \\quad I_C = 0, \\quad I_E = 0$$
+          ${result.ctx.VCC !== undefined ? `<div style="margin-top:0.3rem; color: var(--success); font-family:'JetBrains Mono',monospace;">V<sub>CE</sub> = V<sub>CC</sub> = ${formatValue(result.ctx.VCC, 'V')} V</div>` : ''}
+        </div>
+      </div>`;
+    }
+    stepsContainer.innerHTML = stepsHtml;
+  }
+
+  resultPanel.classList.add('visible');
+  // Re-render MathJax
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise([resultPanel]).catch(()=>{});
+  }
+}
+
+function buildStepHtml(s, c) {
+  const info = c.variables[s.var];
+  const unit = info?.unidad || '';
+  const valStr = formatValue(s.value, unit);
+  // Para resistencias, formatValue ya incluye "kΩ"/"MΩ"; no añadir sufijo
+  const unitSuffix = (unit === 'Ω') ? '' : unit;
+  return `<div class="step">
+    <div class="step-label">${formatVarName(s.var)}:</div>
+    $$${s.tex}$$
+    <div style="margin-top:0.3rem; color:var(--success); font-family:'JetBrains Mono',monospace;">
+      ${formatVarName(s.var)} = ${valStr} ${unitSuffix}
+    </div>
+  </div>`;
+}
+
+function filterRelevantSteps(allSteps, target) {
+  // Reconstruir el subárbol de dependencias que lleva al target
+  const stepMap = new Map();
+  // Nos quedamos con el ÚLTIMO cálculo de cada variable (el que se usó para llegar al target)
+  for (let i = allSteps.length - 1; i >= 0; i--) {
+    if (!stepMap.has(allSteps[i].var)) stepMap.set(allSteps[i].var, allSteps[i]);
+  }
+  const relevant = [];
+  const visited = new Set();
+  function visit(name) {
+    if (visited.has(name)) return;
+    visited.add(name);
+    const s = stepMap.get(name);
+    if (!s) return;
+    for (const d of s.deps) visit(d);
+    relevant.push(s);
+  }
+  visit(target);
+  return relevant;
+}
+
+function findMissingForTarget(c, target, inputs) {
+  // Para cada fórmula que produce el target, ¿qué deps faltan?
+  const missing = new Set();
+  for (const f of c.formulas) {
+    if (f.resultado !== target) continue;
+    for (const d of f.deps) {
+      if (inputs[d] === undefined && d !== target) missing.add(d);
+    }
+  }
+  return Array.from(missing);
+}
+
+function showError(msg) {
+  const panel = document.getElementById('error-panel');
+  panel.innerHTML = msg;
+  panel.classList.add('visible');
+}
+
+/* ============================================================
+   LIMPIAR
+   ============================================================ */
+function limpiar() {
+  document.querySelectorAll('.var-input-row input').forEach(i => {
+    i.value = '';
+    i.disabled = false;
+  });
+  document.querySelectorAll('.variable-input').forEach(el => {
+    el.classList.remove('filled', 'unknown');
+  });
+  document.querySelectorAll('.var-unknown-btn').forEach(btn => btn.classList.remove('active'));
+  unknownVariables = new Set();
+  document.getElementById('result-panel').classList.remove('visible');
+  document.getElementById('error-panel').classList.remove('visible');
+  updateUnknownIndicator();
+}
+
+/* ============================================================
+   MODAL: RECTA DE CARGA
+   ============================================================
+   La recta de carga en CC de un transistor se obtiene de la malla
+   colector-emisor:
+       VCC = IC·RC + VCE + IE·RE   ≈   VCE = VCC − IC·(RC + RE)
+   (con IE ≈ IC).
+   Sus dos extremos característicos son:
+     - Punto de saturación:  VCE = VCE(sat) ≈ 0,2 V  →  IC(sat) = (VCC − VCE(sat))/(RC + RE)
+     - Punto de corte:       IC = 0  →  VCE(corte) = VCC  (si no hay RE)
+                                              VCE(corte) = VCC − IE·RE no aplicable en corte (IE=0)
+   El punto de trabajo Q es (VCE, IC) calculado por la app.
+   ============================================================ */
+
+function openLoadLineModal() {
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  if (!c) return;
+
+  // Recoger valores: preferimos usar los inputs introducidos y, si se ha calculado,
+  // los resultados (result.ctx). Hacemos una mezcla.
+  const inputs = collectInputs();
+  if (inputs.VBE === undefined && c.variables.VBE && !unknownVariables.has('VBE')) inputs.VBE = VBE_DEFAULT;
+
+  // Resolver todo lo que se pueda (sin marcar incógnitas) para tener VCE e IC
+  const targets = Array.from(unknownVariables);
+  const result = solve(targets, inputs);
+  const ctx = result.ctx;
+
+  // Guardar estado inicial para los sliders (valores "originales" del circuito)
+  llInitialState = {
+    ctx: {...ctx},
+    c: c,
+  };
+
+  // Construir los controles deslizantes según las variables disponibles
+  buildLLControls(c, ctx);
+
+  // Renderizar
+  refreshLoadLineView();
+}
+
+/* Estado guardado al abrir el modal, para el botón "Restablecer" */
+let llInitialState = null;
+/* Valores actuales de los sliders (override sobre los inputs) */
+let llOverrides = {};
+
+/* Construye los sliders según las variables del circuito.
+   Variables que pueden afectar al punto Q: VCC, VBB, VEE, RB, RC, RE, R1, R2, beta. */
+function buildLLControls(c, ctx) {
+  // Inicializar overrides con los valores actuales
+  llOverrides = {};
+  const controllable = ['VCC','VBB','VEE','RB','RC','RE','R1','R2','beta','beta1','beta2'];
+  controllable.forEach(name => {
+    if (ctx[name] !== undefined && c.variables[name]) {
+      llOverrides[name] = ctx[name];
+    }
+  });
+
+  const container = document.getElementById('ll-controls-list');
+  let html = '';
+  for (const name of controllable) {
+    if (llOverrides[name] === undefined) continue;
+    const info = c.variables[name];
+    const isResistance = (info.unidad === 'Ω');
+    const isBeta = (name.startsWith('beta'));
+    const val = llOverrides[name];
+
+    // Rango del slider: 0.1× a 10× el valor actual
+    const min = val * 0.1;
+    const max = val * 10;
+    const step = (max - min) / 1000;
+
+    // Mostrar el valor con unidad apropiada
+    let displayVal;
+    if (isResistance) displayVal = formatValue(val, 'Ω');
+    else if (isBeta) displayVal = val.toFixed(0);
+    else displayVal = formatValue(val, info.unidad) + ' ' + info.unidad;
+
+    // Etiqueta del nombre con subíndices
+    const nameHtml = formatVarName(name);
+
+    html += `<div class="ll-control" data-var="${name}">
+      <div class="ll-control-row">
+        <span class="ll-ctrl-name">${nameHtml}</span>
+        <span class="ll-ctrl-val" id="ll-ctrl-val-${name}">${displayVal}</span>
+      </div>
+      <input type="range" min="${min}" max="${max}" step="${step}" value="${val}"
+             oninput="onLLSlider('${name}', this.value)" />
+      <div class="ll-control-range-row">
+        <span>${formatSliderEndpoint(min, info)}</span>
+        <span>${formatSliderEndpoint(max, info)}</span>
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function formatSliderEndpoint(v, info) {
+  if (info.unidad === 'Ω') return formatValue(v, 'Ω');
+  if (info.unidad === '') return v.toFixed(0);
+  return formatValue(v, info.unidad) + ' ' + info.unidad;
+}
+
+function onLLSlider(name, value) {
+  const v = parseFloat(value);
+  if (isNaN(v)) return;
+  llOverrides[name] = v;
+  // Actualizar la etiqueta del valor
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  const info = c.variables[name];
+  let displayVal;
+  if (info.unidad === 'Ω') displayVal = formatValue(v, 'Ω');
+  else if (info.unidad === '') displayVal = v.toFixed(0);
+  else displayVal = formatValue(v, info.unidad) + ' ' + info.unidad;
+  const valEl = document.getElementById(`ll-ctrl-val-${name}`);
+  if (valEl) valEl.textContent = displayVal;
+  // Refrescar
+  refreshLoadLineView();
+}
+
+function resetLLControls() {
+  if (!llInitialState) return;
+  // Restaurar overrides a los valores iniciales
+  const ctx = llInitialState.ctx;
+  const c = llInitialState.c;
+  llOverrides = {};
+  const controllable = ['VCC','VBB','VEE','RB','RC','RE','R1','R2','beta','beta1','beta2'];
+  controllable.forEach(name => {
+    if (ctx[name] !== undefined) llOverrides[name] = ctx[name];
+  });
+  buildLLControls(c, ctx);
+  refreshLoadLineView();
+}
+
+function applyLLToInputs() {
+  // Aplicar los valores actuales de los sliders a los inputs de la app
+  if (!llOverrides) return;
+  for (const [name, value] of Object.entries(llOverrides)) {
+    const input = document.querySelector(`input[data-var="${name}"]`);
+    if (!input) continue;
+    const c = circuitos.find(c => c.id === currentCircuitId);
+    const info = c.variables[name];
+    // Convertir el valor a una cadena adecuada
+    if (info.unidad === 'Ω') {
+      // Mostrar en kΩ si el valor es múltiplo cómodo
+      input.value = formatValue(value, 'Ω').replace(/\s/g, '');
+    } else if (info.unidad === '') {
+      input.value = value.toFixed(0);
+    } else {
+      input.value = value.toString();
+    }
+    // Disparar evento
+    onInputChange(name, input.value);
+  }
+  // Cerrar modal y recalcular
+  closeLoadLineModal();
+  calcular();
+}
+
+/* Recalcula el punto Q con los overrides actuales y redibuja todo */
+function refreshLoadLineView() {
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  if (!c) return;
+
+  // Partir de los inputs originales + aplicar overrides
+  const inputs = collectInputs();
+  if (inputs.VBE === undefined && c.variables.VBE && !unknownVariables.has('VBE')) inputs.VBE = VBE_DEFAULT;
+  // Aplicar overrides
+  for (const [name, value] of Object.entries(llOverrides)) {
+    inputs[name] = value;
+  }
+
+  // Resolver (sin incógnitas marcadas: queremos VCE e IC)
+  const targets = Array.from(unknownVariables);
+  const result = solve(targets, inputs);
+  const ctx = result.ctx;
+  const satInfo = detectSaturation(c, ctx, targets);
+
+  const isSaturated = (satInfo.estado === 'saturacion');
+  const isCutoff = (satInfo.estado === 'corte');
+
+  let qVCE = ctx.VCE;
+  let qIC = ctx.IC;
+  let qIB = ctx.IB;
+  if (isSaturated || isCutoff) {
+    if (satInfo.recalc.VCE !== undefined) qVCE = satInfo.recalc.VCE;
+    if (satInfo.recalc.IC !== undefined) qIC = satInfo.recalc.IC;
+  }
+
+  const vcc = llOverrides.VCC !== undefined ? llOverrides.VCC : ctx.VCC;
+  const rc = llOverrides.RC !== undefined ? llOverrides.RC : ctx.RC;
+  const re = llOverrides.RE !== undefined ? llOverrides.RE : ctx.RE;
+  const vceSat = VCE_SAT_DEFAULT;
+  const rTotal = (rc !== undefined ? rc : 0) + (re !== undefined ? re : 0);
+
+  // Verificar que tenemos los datos mínimos
+  const missing = [];
+  if (vcc === undefined) missing.push('V_CC');
+  if (rc === undefined) missing.push('R_C');
+  if (missing.length > 0) {
+    document.getElementById('loadline-subtitle').textContent = c.nombre;
+    document.getElementById('loadline-explanation').innerHTML =
+      `<strong>Faltan datos para dibujar la recta de carga.</strong><br>` +
+      `Introduce al menos: ${missing.map(formatVarName).join(', ')}.`;
+    const canvas = document.getElementById('loadline-canvas');
+    const cx = canvas.getContext('2d');
+    cx.clearRect(0, 0, canvas.width, canvas.height);
+    ['qpoint-ic','qpoint-vce','qpoint-ib','qpoint-state','ll-ic-sat','ll-vce-cutoff','ll-slope','ll-vcc','ll-rc','ll-re','ll-vcesat']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.querySelector('.ll-val').textContent = '—'; });
+    document.getElementById('modal-loadline').classList.add('open');
+    return;
+  }
+
+  const icSat = (vcc - vceSat) / rTotal;
+  const vceCutoff = vcc;
+
+  document.getElementById('loadline-subtitle').textContent = `${c.id}. ${c.nombre} · ${c.categoria}`;
+
+  drawLoadLineChart(qVCE, qIC, vcc, icSat, vceSat, vceCutoff, isSaturated, isCutoff, re !== undefined);
+
+  // Actualizar paneles
+  setLLValue('qpoint-ic', qIC !== undefined ? formatValue(qIC, 'A') + ' A' : '—');
+  setLLValue('qpoint-vce', qVCE !== undefined ? formatValue(qVCE, 'V') + ' V' : '—');
+  setLLValue('qpoint-ib', qIB !== undefined ? formatValue(qIB, 'A') + ' A' : '—');
+  const stateEl = document.getElementById('qpoint-state');
+  if (isSaturated) {
+    stateEl.className = 'loadline-info-row saturated';
+    setLLValue('qpoint-state', 'Saturación');
+  } else if (isCutoff) {
+    stateEl.className = 'loadline-info-row cutoff';
+    setLLValue('qpoint-state', 'Corte');
+  } else {
+    stateEl.className = 'loadline-info-row highlight';
+    setLLValue('qpoint-state', 'Activa');
+  }
+
+  setLLValue('ll-ic-sat', formatValue(icSat, 'A') + ' A');
+  setLLValue('ll-vce-cutoff', formatValue(vceCutoff, 'V') + ' V');
+  setLLValue('ll-slope', '−1 / ' + formatValue(rTotal, 'Ω'));
+
+  setLLValue('ll-vcc', formatValue(vcc, 'V') + ' V');
+  setLLValue('ll-rc', rc !== undefined ? formatValue(rc, 'Ω') : '—');
+  setLLValue('ll-re', re !== undefined ? formatValue(re, 'Ω') : '—');
+  setLLValue('ll-vcesat', formatValue(vceSat, 'V') + ' V');
+
+  // Explicación
+  let expl = `<strong>Recta de carga en CC:</strong> V<sub>CE</sub> = V<sub>CC</sub> − I<sub>C</sub> · (R<sub>C</sub>${re ? ' + R<sub>E</sub>' : ''}). `;
+  expl += `La recta une el punto de saturación (V<sub>CE(sat)</sub> ≈ ${vceSat} V, I<sub>C(sat)</sub> = ${formatValue(icSat,'A')} A) `;
+  expl += `y el punto de corte (I<sub>C</sub> = 0, V<sub>CE</sub> = V<sub>CC</sub> = ${formatValue(vcc,'V')} V). `;
+  if (isSaturated) {
+    expl += `<br><br><strong style="color:var(--warning);">El punto Q cae en la zona de saturación</strong> (V<sub>CE</sub> ≈ ${vceSat} V). `;
+    expl += `El transistor está saturado: la corriente real de colector es I<sub>C(sat)</sub> = ${formatValue(icSat,'A')} A, no β·I<sub>B</sub>.`;
+  } else if (isCutoff) {
+    expl += `<br><br><strong style="color:#a5b4fc;">El punto Q cae en la zona de corte</strong> (I<sub>C</sub> ≈ 0). El transistor no conduce.`;
+  } else {
+    const vceNorm = qVCE !== undefined ? qVCE : 0;
+    const icNorm = qIC !== undefined ? qIC : 0;
+    expl += `<br><br><strong style="color:var(--accent);">El punto Q está en la zona activa</strong>: V<sub>CE</sub> = ${formatValue(vceNorm,'V')} V > V<sub>CE(sat)</sub>, `;
+    expl += `luego IC = β·IB es válida y el transistor amplifica correctamente.`;
+    if (qIC !== undefined && qVCE !== undefined) {
+      const margenSat = icSat - qIC;
+      const margenCorte = qVCE - vceSat;
+      expl += `<br><br>Margen hasta saturación: ΔI = ${formatValue(Math.abs(margenSat),'A')} A · `;
+      expl += `Margen hasta corte: ΔV = ${formatValue(Math.abs(margenCorte),'V')} V.`;
+    }
+  }
+  document.getElementById('loadline-explanation').innerHTML = expl;
+
+  document.getElementById('loadline-legend').innerHTML = `
+    <div class="leg-item"><span class="leg-swatch" style="background:#1e40af"></span>Recta de carga</div>
+    <div class="leg-item"><span class="leg-swatch" style="background:#dc2626"></span>Zona de saturación (V &lt; ${vceSat} V)</div>
+    <div class="leg-item"><span class="leg-swatch dot" style="background:#06b6d4"></span>Punto de trabajo Q</div>
+    <div class="leg-item"><span class="leg-swatch dot" style="background:#ef4444"></span>Punto de saturación</div>
+    <div class="leg-item"><span class="leg-swatch dot" style="background:#10b981"></span>Punto de corte</div>
+  `;
+
+  document.getElementById('modal-loadline').classList.add('open');
+}
+
+function closeLoadLineModal() {
+  document.getElementById('modal-loadline').classList.remove('open');
+}
+
+function setLLValue(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.querySelector('.ll-val').textContent = text;
+}
+
+/* ============================================================
+   DIBUJO DE TEXTO CON SUBÍNDICES EN CANVAS
+   ============================================================
+   Canvas NO interpreta HTML ni LaTeX. Para mostrar subíndices
+   hay que dibujarlos manualmente: cambiar a una fuente más
+   pequeña y posicionar el texto más abajo.
+   
+   Sintaxis soportada en las cadenas:
+     - "I_{C}"        → I con C como subíndice
+     - "V_{CE} (V)"   → V con CE como subíndice + " (V)" normal
+     - "R_{C}+R_{E}"  → dos subíndices
+     - "ΔI"           → letra griega Δ (Unicode directo)
+     - "β·I_{B}"      → β y subíndice
+   ============================================================ */
+
+function drawTextWithSub(ctx, text, x, y, opts = {}) {
+  const align = opts.align || 'left';
+  const fontMain = opts.font || '12px sans-serif';
+  const color = opts.color || '#374151';
+  const baseline = opts.baseline || 'alphabetic';
+  const subScale = 0.72;   // tamaño relativo del subíndice
+  const subOffset = 0.18;  // descenso relativo (fracción de la altura)
+
+  // Parsear el texto en segmentos: {type:'normal',text:'I'} | {type:'sub',text:'C'} ...
+  // Sintaxis:
+  //   _{XXX}  → subíndice con varios caracteres entre llaves
+  //   _X      → subíndice de un solo carácter
+  const segments = [];
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '_') {
+      // Subíndice
+      if (text[i+1] === '{') {
+        // Subíndice entre llaves
+        let j = i + 2;
+        let depth = 1;
+        while (j < text.length && depth > 0) {
+          if (text[j] === '{') depth++;
+          else if (text[j] === '}') depth--;
+          if (depth === 0) break;
+          j++;
+        }
+        segments.push({type:'sub', text: text.substring(i+2, j)});
+        i = j + 1;
+      } else if (i + 1 < text.length) {
+        // Subíndice de un solo carácter
+        segments.push({type:'sub', text: text[i+1]});
+        i += 2;
+      } else {
+        i++;
+      }
+    } else {
+      // Texto normal hasta el próximo '_'
+      let j = i;
+      while (j < text.length && text[j] !== '_') j++;
+      segments.push({type:'normal', text: text.substring(i, j)});
+      i = j;
+    }
+  }
+
+  // Medir ancho total
+  ctx.font = fontMain;
+  let totalWidth = 0;
+  const subFont = scaleFont(fontMain, subScale);
+  for (const seg of segments) {
+    if (seg.type === 'normal') {
+      ctx.font = fontMain;
+      totalWidth += ctx.measureText(seg.text).width;
+    } else {
+      ctx.font = subFont;
+      totalWidth += ctx.measureText(seg.text).width;
+    }
+  }
+
+  // Calcular posición X inicial según el alineamiento
+  let curX;
+  if (align === 'center') curX = x - totalWidth / 2;
+  else if (align === 'right') curX = x - totalWidth;
+  else curX = x;
+
+  // Dibujar cada segmento
+  ctx.fillStyle = color;
+  ctx.textBaseline = baseline;
+  for (const seg of segments) {
+    if (seg.type === 'normal') {
+      ctx.font = fontMain;
+      ctx.fillText(seg.text, curX, y);
+      curX += ctx.measureText(seg.text).width;
+    } else {
+      ctx.font = subFont;
+      // El subíndice se dibuja un poco más abajo
+      const mainHeight = parseInt(fontMain.match(/\d+/)?.[0] || 12);
+      const yOffset = mainHeight * subOffset;
+      ctx.fillText(seg.text, curX, y + yOffset);
+      curX += ctx.measureText(seg.text).width;
+    }
+  }
+  // Restaurar fuente principal
+  ctx.font = fontMain;
+}
+
+/* Genera una fuente escalada a partir de "12px sans-serif" → "8.64px sans-serif" */
+function scaleFont(fontStr, scale) {
+  const m = fontStr.match(/^(\d+(?:\.\d+)?)px\s*(.*)$/);
+  if (!m) return fontStr;
+  const newSize = parseFloat(m[1]) * scale;
+  return `${newSize}px ${m[2]}`;
+}
+
+/* ============================================================
+   EXPORTAR EL GRÁFICO COMO PNG
+   ============================================================ */
+function exportLoadLinePNG() {
+  const canvas = document.getElementById('loadline-canvas');
+  if (!canvas) return;
+  // Crear un canvas temporal con fondo blanco (canvas.toDataURL respeta la transparencia,
+  // pero queremos fondo blanco para que se vea bien en cualquier visor)
+  const tmp = document.createElement('canvas');
+  tmp.width = canvas.width;
+  tmp.height = canvas.height;
+  const tctx = tmp.getContext('2d');
+  tctx.fillStyle = '#ffffff';
+  tctx.fillRect(0, 0, tmp.width, tmp.height);
+  tctx.drawImage(canvas, 0, 0);
+
+  // Generar descarga
+  const link = document.createElement('a');
+  const c = circuitos.find(c => c.id === currentCircuitId);
+  const circuitName = c ? c.nombre.replace(/\s+/g, '_') : 'circuito';
+  link.download = `recta_carga_${circuitName}.png`;
+  link.href = tmp.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* ============================================================
+   DIBUJO DEL GRÁFICO DE LA RECTA DE CARGA
+   ============================================================
+   Estrategia anti-superposición:
+   - Las etiquetas de los puntos (Sat, Corte, Q) se dibujan en
+     "cajas" con fondo blanco semitransparente.
+   - Antes de dibujar cada etiqueta, se comprueba si su caja
+     choca con alguna ya colocada. Si choca, se intenta reposicionar
+     (arriba, abajo, izquierda, derecha) hasta encontrar hueco.
+   - El margen izquierdo es más ancho para que no se corten los
+     valores del eje Y (que pueden ser largos como "4.224 mA").
+   ============================================================ */
+
+function drawLoadLineChart(qVCE, qIC, vcc, icSat, vceSat, vceCutoff, isSaturated, isCutoff, hasRE) {
+  const canvas = document.getElementById('loadline-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = 700, cssH = 500;
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Márgenes ampliados: izquierda más ancha para valores largos del eje Y
+  const margin = { left: 95, right: 30, top: 40, bottom: 70 };
+  const W = cssW - margin.left - margin.right;
+  const H = cssH - margin.top - margin.bottom;
+
+  const xMax = vcc * 1.1;
+  const yMax = icSat * 1.2;
+
+  const xPix = v => margin.left + (v / xMax) * W;
+  const yPix = i => margin.top + H - (i / yMax) * H;
+
+  // Limpiar y fondo
+  ctx.clearRect(0, 0, cssW, cssH);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(margin.left, margin.top, W, H);
+
+  // ===== Zona de saturación =====
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
+  ctx.fillRect(margin.left, margin.top, xPix(vceSat) - margin.left, H);
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  ctx.moveTo(xPix(vceSat), margin.top);
+  ctx.lineTo(xPix(vceSat), margin.top + H);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Etiqueta vertical "V_CE(sat)" en la parte superior de la línea
+  drawTextWithSub(ctx, `V_{CE(sat)} = ${formatValue(vceSat,'V')} V`,
+                  xPix(vceSat) + 4, margin.top + 11,
+                  {align:'left', font:'10px sans-serif', color:'#dc2626'});
+
+  // ===== Grid =====
+  ctx.strokeStyle = '#e5e7eb';
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 5; i++) {
+    const y = margin.top + (H * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(margin.left, y);
+    ctx.lineTo(margin.left + W, y);
+    ctx.stroke();
+    const x = margin.left + (W * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(x, margin.top);
+    ctx.lineTo(x, margin.top + H);
+    ctx.stroke();
+  }
+
+  // ===== Ejes =====
+  ctx.strokeStyle = '#1f2937';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(margin.left, margin.top);
+  ctx.lineTo(margin.left, margin.top + H);
+  ctx.lineTo(margin.left + W, margin.top + H);
+  ctx.stroke();
+
+  // Etiquetas de los ejes
+  drawTextWithSub(ctx, 'I_{C} (A)', margin.left - 8, margin.top - 8,
+                  {align:'right', font:'bold 12px sans-serif', color:'#374151'});
+  drawTextWithSub(ctx, 'V_{CE} (V)', margin.left + W/2, margin.top + H + 50,
+                  {align:'center', font:'bold 12px sans-serif', color:'#374151'});
+
+  // ===== Ticks eje X =====
+  ctx.fillStyle = '#374151';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  const xTicks = 6;
+  for (let i = 0; i <= xTicks; i++) {
+    const v = (xMax * i / xTicks);
+    const x = xPix(v);
+    ctx.beginPath();
+    ctx.moveTo(x, margin.top + H);
+    ctx.lineTo(x, margin.top + H + 4);
+    ctx.strokeStyle = '#1f2937';
+    ctx.stroke();
+    ctx.fillText(formatValue(v, 'V'), x, margin.top + H + 18);
+  }
+
+  // ===== Ticks eje Y =====
+  ctx.textAlign = 'right';
+  const yTicks = 5;
+  for (let i = 0; i <= yTicks; i++) {
+    const v = (yMax * i / yTicks);
+    const y = yPix(v);
+    ctx.beginPath();
+    ctx.moveTo(margin.left - 4, y);
+    ctx.lineTo(margin.left, y);
+    ctx.strokeStyle = '#1f2937';
+    ctx.stroke();
+    ctx.fillText(formatValue(v, 'A'), margin.left - 8, y + 4);
+  }
+
+  // ===== Recta de carga =====
+  ctx.strokeStyle = '#1e40af';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(xPix(vceCutoff), yPix(0));
+  ctx.lineTo(xPix(vceSat), yPix(icSat));
+  ctx.stroke();
+
+  // ===== Gestión de etiquetas con detección de colisiones =====
+  const placedLabels = []; // {x, y, w, h}
+
+  // Helper: dibujar una etiqueta con fondo, comprobando colisiones
+  function placeLabel(text, anchorX, anchorY, preferredSide, font, color) {
+    // preferredSide: 'right', 'left', 'above', 'below'
+    // Medir el texto (con subíndices)
+    const width = measureTextWithSub(ctx, text, font);
+    const fontHeight = parseInt(font.match(/\d+/)?.[0] || 12);
+    const padX = 5, padY = 3;
+    const boxW = width + padX * 2;
+    const boxH = fontHeight + padY * 2;
+
+    // Generar posiciones candidatas en orden de preferencia
+    const candidates = [];
+    const sides = [preferredSide, ...['right','above','left','below'].filter(s => s !== preferredSide)];
+    for (const side of sides) {
+      let bx, by;
+      if (side === 'right') {
+        bx = anchorX + 8;
+        by = anchorY - boxH/2;
+      } else if (side === 'left') {
+        bx = anchorX - boxW - 8;
+        by = anchorY - boxH/2;
+      } else if (side === 'above') {
+        bx = anchorX - boxW/2;
+        by = anchorY - boxH - 8;
+      } else { // below
+        bx = anchorX - boxW/2;
+        by = anchorY + 8;
+      }
+      // Ajustar para mantener dentro del canvas
+      bx = Math.max(margin.left + 2, Math.min(bx, margin.left + W - boxW - 2));
+      by = Math.max(margin.top + 2, Math.min(by, margin.top + H - boxH - 2));
+      candidates.push({side, bx, by});
+    }
+
+    // Elegir la primera candidata que no colisione
+    let chosen = null;
+    for (const c of candidates) {
+      const collides = placedLabels.some(l =>
+        c.bx < l.x + l.w && c.bx + boxW > l.x &&
+        c.by < l.y + l.h && c.by + boxH > l.y
+      );
+      if (!collides) { chosen = c; break; }
+    }
+    if (!chosen) chosen = candidates[0]; // si todas chocan, usar la preferida
+
+    // Dibujar fondo
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    ctx.strokeStyle = color + '40'; // semi-transparente del mismo color
+    ctx.lineWidth = 1;
+    roundRect(ctx, chosen.bx, chosen.by, boxW, boxH, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // Dibujar texto
+    drawTextWithSub(ctx, text, chosen.bx + padX, chosen.by + padY + fontHeight - 2,
+                    {align:'left', font, color});
+
+    // Registrar la etiqueta colocada
+    placedLabels.push({x: chosen.bx, y: chosen.by, w: boxW, h: boxH});
+  }
+
+  // ===== Punto de saturación (rojo) y punto de corte (verde) =====
+  // Detectar si Q está muy cerca de Sat o de Corte para combinar etiquetas
+  const qNearSat = (qVCE !== undefined && qIC !== undefined) &&
+                   Math.hypot(xPix(qVCE) - xPix(vceSat), yPix(qIC) - yPix(icSat)) < 15;
+  const qNearCutoff = (qVCE !== undefined && qIC !== undefined) &&
+                      Math.hypot(xPix(qVCE) - xPix(vceCutoff), yPix(qIC) - yPix(0)) < 15;
+
+  // Punto de saturación (rojo)
+  drawDot(ctx, xPix(vceSat), yPix(icSat), '#ef4444');
+  // Si Q está sobre Sat, no dibujar la etiqueta de Sat por separado (se combinará luego)
+  if (!qNearSat) {
+    placeLabel(`Sat: (V_{CE(sat)}=${formatValue(vceSat,'V')} V, I_{C(sat)}=${formatValue(icSat,'A')} A)`,
+               xPix(vceSat), yPix(icSat), 'right', '11px sans-serif', '#7f1d1d');
+  }
+
+  // Punto de corte (verde)
+  drawDot(ctx, xPix(vceCutoff), yPix(0), '#10b981');
+  // Si Q está sobre Corte, no dibujar la etiqueta de Corte por separado
+  if (!qNearCutoff) {
+    placeLabel(`Corte: (V_{CC}=${formatValue(vceCutoff,'V')} V, I_{C}=0 A)`,
+               xPix(vceCutoff), yPix(0), 'above', '11px sans-serif', '#065f46');
+  }
+
+  // ===== Punto de trabajo Q =====
+  if (qVCE !== undefined && qIC !== undefined) {
+    // Líneas guía
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(xPix(qVCE), yPix(qIC));
+    ctx.lineTo(xPix(qVCE), margin.top + H);
+    ctx.moveTo(xPix(qVCE), yPix(qIC));
+    ctx.lineTo(margin.left, yPix(qIC));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const qColor = isSaturated ? '#f59e0b' : (isCutoff ? '#818cf8' : '#06b6d4');
+    const qTextColor = qColor === '#06b6d4' ? '#0e7490' : (qColor === '#f59e0b' ? '#b45309' : '#4f46e5');
+    drawDot(ctx, xPix(qVCE), yPix(qIC), qColor, 7);
+
+    let qLabel = 'Q';
+    if (isSaturated) qLabel = 'Q (SAT)';
+    else if (isCutoff) qLabel = 'Q (CORTE)';
+
+    // Construir texto de la etiqueta de Q
+    let qText;
+    if (qNearSat) {
+      // Combinar con la info de Sat
+      qText = `${qLabel} = Sat: (V_{CE}=${formatValue(qVCE,'V')} V, I_{C}=${formatValue(qIC,'A')} A)`;
+    } else if (qNearCutoff) {
+      qText = `${qLabel} = Corte: (V_{CE}=${formatValue(qVCE,'V')} V, I_{C}=${formatValue(qIC,'A')} A)`;
+    } else {
+      qText = `${qLabel}: (V_{CE}=${formatValue(qVCE,'V')} V, I_{C}=${formatValue(qIC,'A')} A)`;
+    }
+
+    // Lado preferido: si Q está cerca de Sat, ir a la izquierda; si cerca de Corte, ir abajo
+    let qPreferred = 'right';
+    if (qNearSat) qPreferred = 'left';
+    else if (qNearCutoff) qPreferred = 'below';
+
+    placeLabel(qText, xPix(qVCE), yPix(qIC), qPreferred, '11px sans-serif', qTextColor);
+  }
+
+  // ===== Título =====
+  drawTextWithSub(ctx, 'Recta de carga en CC', margin.left + W/2, margin.top - 16,
+                  {align:'center', font:'bold 13px sans-serif', color:'#111827'});
+}
+
+/* Mide el ancho total de un texto con subíndices */
+function measureTextWithSub(ctx, text, fontMain) {
+  const subScale = 0.72;
+  const subFont = scaleFont(fontMain, subScale);
+  ctx.font = fontMain;
+  let totalWidth = 0;
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '_') {
+      if (text[i+1] === '{') {
+        let j = i + 2;
+        let depth = 1;
+        while (j < text.length && depth > 0) {
+          if (text[j] === '{') depth++;
+          else if (text[j] === '}') depth--;
+          if (depth === 0) break;
+          j++;
+        }
+        ctx.font = subFont;
+        totalWidth += ctx.measureText(text.substring(i+2, j)).width;
+        ctx.font = fontMain;
+        i = j + 1;
+      } else if (i + 1 < text.length) {
+        ctx.font = subFont;
+        totalWidth += ctx.measureText(text[i+1]).width;
+        ctx.font = fontMain;
+        i += 2;
+      } else {
+        i++;
+      }
+    } else {
+      let j = i;
+      while (j < text.length && text[j] !== '_') j++;
+      totalWidth += ctx.measureText(text.substring(i, j)).width;
+      i = j;
+    }
+  }
+  ctx.font = fontMain;
+  return totalWidth;
+}
+
+/* Dibuja un rectángulo redondeado */
+function roundRect(ctx, x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawDot(ctx, x, y, color, r = 6) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  renderSidebar();
+  // PWA: atajos del manifiesto (?circuito=N abre ese montaje directamente)
+  const params = new URLSearchParams(location.search);
+  const cId = parseInt(params.get('circuito') || '0', 10);
+  selectCircuit(cId >= 1 && cId <= circuitos.length ? cId : 1);
+  document.getElementById('btn-calcular').addEventListener('click', calcular);
+  document.getElementById('btn-limpiar').addEventListener('click', limpiar);
+  document.getElementById('btn-loadline').addEventListener('click', openLoadLineModal);
+  // Cerrar modal con Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLoadLineModal();
+  });
+  // PWA: botón de instalación
+  const btnInstall = document.getElementById('pwa-install');
+  if (btnInstall) {
+    btnInstall.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice.catch(() => {});
+      deferredInstallPrompt = null;
+      btnInstall.hidden = true;
+    });
+  }
+});
+
+/* ============================================================
+   PWA: instalación y Service Worker
+   ============================================================ */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // El navegador permite la instalación: mostramos el botón
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('pwa-install');
+  if (btn) btn.hidden = false;
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('pwa-install');
+  if (btn) btn.hidden = true;
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('sw.js')
+      .then((reg) => {
+        // Actualizaciones: el nuevo SW pasa a activo al estar listo
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (nw) nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' &&
+                navigator.serviceWorker.controller) {
+              nw.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+      })
+      .catch((err) => console.warn('Service Worker no registrado:', err));
+  });
+}
+</script>
+</body>
+</html>
