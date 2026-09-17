@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.5" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.52" cy="0.56" r="0.45">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <g stroke="#f1f5f9" fill="none" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="532" cy="512" r="250"/>
+    <line x1="590" y1="372" x2="590" y2="652" stroke-width="38"/>
+    <line x1="212" y1="512" x2="590" y2="512"/>
+    <polyline points="590,410 716,284 716,110"/>
+    <polyline points="590,614 716,740 716,914"/>
+  </g>
+  <polygon points="700,726 620.8,694.8 668.8,646.8" fill="#22d3ee"/>
+  <circle cx="212" cy="512" r="17" fill="#22d3ee"/>
+  <circle cx="716" cy="110" r="17" fill="#22d3ee"/>
+  <circle cx="716" cy="914" r="17" fill="#22d3ee"/>
+</svg>
