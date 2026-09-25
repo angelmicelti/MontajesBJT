@@ -31,7 +31,6 @@
   :root {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
     --bg-card: rgba(30, 41, 59, 0.7);
     --bg-card-hover: rgba(51, 65, 85, 0.8);
     --border: rgba(148, 163, 184, 0.2);
@@ -40,15 +39,12 @@
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
     --accent: #06b6d4;
-    --accent-hover: #0891b2;
     --accent-glow: rgba(6, 182, 212, 0.3);
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --input-color: #3b82f6;
-    --output-color: #10b981;
     --unknown-color: #f59e0b;
-    --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
     --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
@@ -553,10 +549,7 @@
   .unknown-indicator strong { color: var(--unknown-color); }
 
   /* Formulas display */
-  .formulas-section {
-    margin-top: 1.25rem;
-  }
-  .formulas-section h3 {
+  .panel-title {
     font-size: 1rem;
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
@@ -696,10 +689,7 @@
 
   /* ===== Modo examen ===== */
   body.examen-mode .formulas-card { display: none !important; }
-  body.examen-mode .result-steps,
-  body.examen-mode #result-steps { display: none !important; }
-  body.examen-mode .step { display: none !important; }
-  body.examen-mode .result-panel .result-steps h4 { display: none; }
+  body.examen-mode .result-steps { display: none !important; }
   body.examen-mode .exam-badge { display: inline-flex !important; }
   body.examen-mode .var-desc { display: none; }
   body.examen-mode .info-block { opacity: 0.6; }
@@ -1229,7 +1219,7 @@
         </div>
 
         <div class="variables-panel">
-          <h3 style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem;">
+          <h3 class="panel-title">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
             Datos del problema
           </h3>
@@ -1968,7 +1958,7 @@ const circuitos = [
       // inversas
       {resultado:"RB",  deps:["VBB","VEE","VBE","IB","beta","RE"], fn:v=>(v.VBB-v.VEE-v.VBE)/v.IB-(v.beta+1)*v.RE, tex:"R_B = \\frac{V_{BB}-V_{EE}-V_{BE}}{I_B}-(\\beta+1)R_E"},
       {resultado:"RE",  deps:["VE","VEE","IE"],     fn:v=>(v.VE-v.VEE)/v.IE,      tex:"R_E = (V_E - V_{EE})/I_E"},
-      {resultado:"VBB", deps:["IB","RB","beta","RE","VEE","VBE"], fn:v=>v.IB*v.RB+(v.beta+1)*v.RE*v.IB/(v.beta+1)*0+v.VEE+v.VBE+(v.beta+1)*v.RE*v.IB, tex:"V_{BB} = I_B R_B+(\\beta+1)R_E I_B+V_{EE}+V_{BE}"},
+      {resultado:"VBB", deps:["IB","RB","beta","RE","VEE","VBE"], fn:v=>v.IB*v.RB+v.VEE+v.VBE+(v.beta+1)*v.RE*v.IB, tex:"V_{BB} = I_B R_B+(\\beta+1)R_E I_B+V_{EE}+V_{BE}"},
       {resultado:"VEE", deps:["VE","IE","RE"],      fn:v=>v.VE-v.IE*v.RE,         tex:"V_{EE} = V_E - I_E R_E"},
       {resultado:"beta",deps:["IC","IB"],           fn:v=>v.IC/v.IB,              tex:"\\beta = I_C/I_B"},
     ],
@@ -2219,7 +2209,6 @@ function displayUnit(info) {
 function placeholderFor(info) {
   if (!info) return '—';
   if (info.unidad === 'Ω' && info.tipo === 'input') return 'ej. 2.3 ó 2K3';
-  if (info.unidad === 'A' && info.tipo === 'output') return '—';
   if (info.unidad === 'V' && info.tipo === 'input') return 'ej. 12';
   return '—';
 }
@@ -2576,17 +2565,11 @@ function detectSaturation(c, ctx, targets) {
     razon: '',
   };
 
-  // Necesitamos VCE calculado (en activa) y al menos IB o IC
-  if (ctx.VCE === undefined && !targets.includes('VCE')) {
-    // Si el usuario pidió VCE como incógnita, ctx.VCE ya estará (o no se pudo calcular)
-  }
   const vce = ctx.VCE;
   const ib = ctx.IB;
   const ic = ctx.IC;
   const beta = ctx.beta || ctx.beta1;  // para Darlington usamos beta1 aprox
   const vcc = ctx.VCC;
-  const vbb = ctx.VBB;
-  const vee = ctx.VEE;
   const rc = ctx.RC;
   const re = ctx.RE;
 
@@ -3018,14 +3001,14 @@ function openLoadLineModal() {
 let llInitialState = null;
 /* Valores actuales de los sliders (override sobre los inputs) */
 let llOverrides = {};
+/* Variables que pueden afectar al punto Q y por tanto son controlables */
+const LL_CONTROLLABLE = ['VCC','VBB','VEE','RB','RC','RE','R1','R2','beta','beta1','beta2'];
 
-/* Construye los sliders según las variables del circuito.
-   Variables que pueden afectar al punto Q: VCC, VBB, VEE, RB, RC, RE, R1, R2, beta. */
+/* Construye los sliders según las variables del circuito. */
 function buildLLControls(c, ctx) {
   // Inicializar overrides con los valores actuales
   llOverrides = {};
-  const controllable = ['VCC','VBB','VEE','RB','RC','RE','R1','R2','beta','beta1','beta2'];
-  controllable.forEach(name => {
+  LL_CONTROLLABLE.forEach(name => {
     if (ctx[name] !== undefined && c.variables[name]) {
       llOverrides[name] = ctx[name];
     }
@@ -3033,11 +3016,9 @@ function buildLLControls(c, ctx) {
 
   const container = document.getElementById('ll-controls-list');
   let html = '';
-  for (const name of controllable) {
+  for (const name of LL_CONTROLLABLE) {
     if (llOverrides[name] === undefined) continue;
     const info = c.variables[name];
-    const isResistance = (info.unidad === 'Ω');
-    const isBeta = (name.startsWith('beta'));
     const val = llOverrides[name];
 
     // Rango del slider: 0.1× a 10× el valor actual
@@ -3045,32 +3026,24 @@ function buildLLControls(c, ctx) {
     const max = val * 10;
     const step = (max - min) / 1000;
 
-    // Mostrar el valor con unidad apropiada
-    let displayVal;
-    if (isResistance) displayVal = formatValue(val, 'Ω');
-    else if (isBeta) displayVal = val.toFixed(0);
-    else displayVal = formatValue(val, info.unidad) + ' ' + info.unidad;
-
-    // Etiqueta del nombre con subíndices
-    const nameHtml = formatVarName(name);
-
     html += `<div class="ll-control" data-var="${name}">
       <div class="ll-control-row">
-        <span class="ll-ctrl-name">${nameHtml}</span>
-        <span class="ll-ctrl-val" id="ll-ctrl-val-${name}">${displayVal}</span>
+        <span class="ll-ctrl-name">${formatVarName(name)}</span>
+        <span class="ll-ctrl-val" id="ll-ctrl-val-${name}">${formatLLValue(val, info)}</span>
       </div>
       <input type="range" min="${min}" max="${max}" step="${step}" value="${val}"
              oninput="onLLSlider('${name}', this.value)" />
       <div class="ll-control-range-row">
-        <span>${formatSliderEndpoint(min, info)}</span>
-        <span>${formatSliderEndpoint(max, info)}</span>
+        <span>${formatLLValue(min, info)}</span>
+        <span>${formatLLValue(max, info)}</span>
       </div>
     </div>`;
   }
   container.innerHTML = html;
 }
 
-function formatSliderEndpoint(v, info) {
+/* Formatea un valor de slider con su unidad apropiada (Ω, β sin unidad, V, A…) */
+function formatLLValue(v, info) {
   if (info.unidad === 'Ω') return formatValue(v, 'Ω');
   if (info.unidad === '') return v.toFixed(0);
   return formatValue(v, info.unidad) + ' ' + info.unidad;
@@ -3082,13 +3055,8 @@ function onLLSlider(name, value) {
   llOverrides[name] = v;
   // Actualizar la etiqueta del valor
   const c = circuitos.find(c => c.id === currentCircuitId);
-  const info = c.variables[name];
-  let displayVal;
-  if (info.unidad === 'Ω') displayVal = formatValue(v, 'Ω');
-  else if (info.unidad === '') displayVal = v.toFixed(0);
-  else displayVal = formatValue(v, info.unidad) + ' ' + info.unidad;
   const valEl = document.getElementById(`ll-ctrl-val-${name}`);
-  if (valEl) valEl.textContent = displayVal;
+  if (valEl) valEl.textContent = formatLLValue(v, c.variables[name]);
   // Refrescar
   refreshLoadLineView();
 }
@@ -3097,23 +3065,21 @@ function resetLLControls() {
   if (!llInitialState) return;
   // Restaurar overrides a los valores iniciales
   const ctx = llInitialState.ctx;
-  const c = llInitialState.c;
   llOverrides = {};
-  const controllable = ['VCC','VBB','VEE','RB','RC','RE','R1','R2','beta','beta1','beta2'];
-  controllable.forEach(name => {
+  LL_CONTROLLABLE.forEach(name => {
     if (ctx[name] !== undefined) llOverrides[name] = ctx[name];
   });
-  buildLLControls(c, ctx);
+  buildLLControls(llInitialState.c, ctx);
   refreshLoadLineView();
 }
 
 function applyLLToInputs() {
   // Aplicar los valores actuales de los sliders a los inputs de la app
   if (!llOverrides) return;
+  const c = circuitos.find(c => c.id === currentCircuitId);
   for (const [name, value] of Object.entries(llOverrides)) {
     const input = document.querySelector(`input[data-var="${name}"]`);
     if (!input) continue;
-    const c = circuitos.find(c => c.id === currentCircuitId);
     const info = c.variables[name];
     // Convertir el valor a una cadena adecuada
     if (info.unidad === 'Ω') {
@@ -3264,35 +3230,18 @@ function setLLValue(id, text) {
 /* ============================================================
    DIBUJO DE TEXTO CON SUBÍNDICES EN CANVAS
    ============================================================
-   Canvas NO interpreta HTML ni LaTeX. Para mostrar subíndices
-   hay que dibujarlos manualmente: cambiar a una fuente más
-   pequeña y posicionar el texto más abajo.
-   
-   Sintaxis soportada en las cadenas:
-     - "I_{C}"        → I con C como subíndice
-     - "V_{CE} (V)"   → V con CE como subíndice + " (V)" normal
-     - "R_{C}+R_{E}"  → dos subíndices
-     - "ΔI"           → letra griega Δ (Unicode directo)
-     - "β·I_{B}"      → β y subíndice
+   Canvas NO interpreta HTML ni LaTeX, así que los subíndices se
+   dibujan a mano: "_{CE}" o "_C" marcan un subíndice que se pinta
+   con una fuente más pequeña y algo más abajo.
    ============================================================ */
 
-function drawTextWithSub(ctx, text, x, y, opts = {}) {
-  const align = opts.align || 'left';
-  const fontMain = opts.font || '12px sans-serif';
-  const color = opts.color || '#374151';
-  const baseline = opts.baseline || 'alphabetic';
-  const subScale = 0.72;   // tamaño relativo del subíndice
-  const subOffset = 0.18;  // descenso relativo (fracción de la altura)
-
-  // Parsear el texto en segmentos: {type:'normal',text:'I'} | {type:'sub',text:'C'} ...
-  // Sintaxis:
-  //   _{XXX}  → subíndice con varios caracteres entre llaves
-  //   _X      → subíndice de un solo carácter
+/* Parsea un texto en segmentos: "I_{C}(A)" →
+   [{type:'normal',text:'I'}, {type:'sub',text:'C'}, {type:'normal',text:'(A)'}] */
+function parseSubSegments(text) {
   const segments = [];
   let i = 0;
   while (i < text.length) {
     if (text[i] === '_') {
-      // Subíndice
       if (text[i+1] === '{') {
         // Subíndice entre llaves
         let j = i + 2;
@@ -3320,19 +3269,25 @@ function drawTextWithSub(ctx, text, x, y, opts = {}) {
       i = j;
     }
   }
+  return segments;
+}
+
+function drawTextWithSub(ctx, text, x, y, opts = {}) {
+  const align = opts.align || 'left';
+  const fontMain = opts.font || '12px sans-serif';
+  const color = opts.color || '#374151';
+  const baseline = opts.baseline || 'alphabetic';
+  const subScale = 0.72;   // tamaño relativo del subíndice
+  const subOffset = 0.18;  // descenso relativo (fracción de la altura)
+  const subFont = scaleFont(fontMain, subScale);
+  const mainHeight = parseInt(fontMain.match(/\d+/)?.[0] || 12);
+  const segments = parseSubSegments(text);
 
   // Medir ancho total
-  ctx.font = fontMain;
   let totalWidth = 0;
-  const subFont = scaleFont(fontMain, subScale);
   for (const seg of segments) {
-    if (seg.type === 'normal') {
-      ctx.font = fontMain;
-      totalWidth += ctx.measureText(seg.text).width;
-    } else {
-      ctx.font = subFont;
-      totalWidth += ctx.measureText(seg.text).width;
-    }
+    ctx.font = (seg.type === 'normal') ? fontMain : subFont;
+    totalWidth += ctx.measureText(seg.text).width;
   }
 
   // Calcular posición X inicial según el alineamiento
@@ -3348,15 +3303,11 @@ function drawTextWithSub(ctx, text, x, y, opts = {}) {
     if (seg.type === 'normal') {
       ctx.font = fontMain;
       ctx.fillText(seg.text, curX, y);
-      curX += ctx.measureText(seg.text).width;
     } else {
       ctx.font = subFont;
-      // El subíndice se dibuja un poco más abajo
-      const mainHeight = parseInt(fontMain.match(/\d+/)?.[0] || 12);
-      const yOffset = mainHeight * subOffset;
-      ctx.fillText(seg.text, curX, y + yOffset);
-      curX += ctx.measureText(seg.text).width;
+      ctx.fillText(seg.text, curX, y + mainHeight * subOffset);
     }
+    curX += ctx.measureText(seg.text).width;
   }
   // Restaurar fuente principal
   ctx.font = fontMain;
@@ -3657,40 +3608,11 @@ function drawLoadLineChart(qVCE, qIC, vcc, icSat, vceSat, vceCutoff, isSaturated
 
 /* Mide el ancho total de un texto con subíndices */
 function measureTextWithSub(ctx, text, fontMain) {
-  const subScale = 0.72;
-  const subFont = scaleFont(fontMain, subScale);
-  ctx.font = fontMain;
+  const subFont = scaleFont(fontMain, 0.72);
   let totalWidth = 0;
-  let i = 0;
-  while (i < text.length) {
-    if (text[i] === '_') {
-      if (text[i+1] === '{') {
-        let j = i + 2;
-        let depth = 1;
-        while (j < text.length && depth > 0) {
-          if (text[j] === '{') depth++;
-          else if (text[j] === '}') depth--;
-          if (depth === 0) break;
-          j++;
-        }
-        ctx.font = subFont;
-        totalWidth += ctx.measureText(text.substring(i+2, j)).width;
-        ctx.font = fontMain;
-        i = j + 1;
-      } else if (i + 1 < text.length) {
-        ctx.font = subFont;
-        totalWidth += ctx.measureText(text[i+1]).width;
-        ctx.font = fontMain;
-        i += 2;
-      } else {
-        i++;
-      }
-    } else {
-      let j = i;
-      while (j < text.length && text[j] !== '_') j++;
-      totalWidth += ctx.measureText(text.substring(i, j)).width;
-      i = j;
-    }
+  for (const seg of parseSubSegments(text)) {
+    ctx.font = (seg.type === 'normal') ? fontMain : subFont;
+    totalWidth += ctx.measureText(seg.text).width;
   }
   ctx.font = fontMain;
   return totalWidth;
